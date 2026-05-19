@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Biology Study Guide — Spring Final</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f0f4f8;--surface:#fff;--surface2:#f8fafc;--text:#0f172a;--muted:#64748b;--border:#e2e8f0;
+  --r:16px;--sh:0 2px 12px rgba(0,0,0,.08),0 1px 3px rgba(0,0,0,.05);--shl:0 8px 32px rgba(0,0,0,.12),0 2px 8px rgba(0,0,0,.06);
+  --c1:#818cf8;--c1l:#eef2ff;--c2:#10b981;--c2l:#d1fae5;--c3:#f59e0b;--c3l:#fef3c7;--c4:#06b6d4;--c4l:#cffafe;
+  --ok:#10b981;--okl:#d1fae5;--err:#ef4444;--errl:#fee2e2;
+}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+#app{max-width:800px;margin:0 auto;padding:0 16px 80px}
+.nav{position:sticky;top:0;z-index:100;background:rgba(240,244,248,.95);backdrop-filter:blur(8px);padding:12px 0;margin-bottom:4px}
+.nav-inner{display:flex;align-items:center;gap:10px}
+.nav-title{font-size:.95rem;font-weight:700;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btn-home{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:10px;border:none;background:var(--surface);color:var(--muted);font-size:.83rem;font-weight:600;cursor:pointer;box-shadow:var(--sh);transition:all .2s;white-space:nowrap;font-family:inherit}
+.btn-home:hover{background:var(--text);color:#fff}
+.view{animation:fadeUp .3s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ─── DASHBOARD ─── */
+.dash-head{text-align:center;padding:28px 0 20px}
+.dash-head h1{font-size:1.9rem;font-weight:800;line-height:1.2;margin-bottom:4px}
+.dash-head p{color:var(--muted);font-size:.9rem}
+.overall{background:var(--surface);border-radius:var(--r);padding:18px 22px;margin-bottom:22px;box-shadow:var(--sh)}
+.overall-label{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px}
+.overall-pct{font-size:2.4rem;font-weight:800;line-height:1;margin-bottom:8px;background:linear-gradient(135deg,var(--c1),var(--c4));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.pbar{height:8px;background:var(--border);border-radius:99px;overflow:hidden}
+.pbar-fill{height:100%;border-radius:99px;transition:width .8s cubic-bezier(.34,1.56,.64,1)}
+.topic-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:480px){.topic-grid{grid-template-columns:1fr}}
+.topic-card{background:var(--surface);border-radius:var(--r);padding:18px;box-shadow:var(--sh);transition:transform .2s,box-shadow .2s;border-top:4px solid var(--tc)}
+.topic-card:hover{transform:translateY(-2px);box-shadow:var(--shl)}
+.tc-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.tc-name{font-size:.95rem;font-weight:700;line-height:1.3;flex:1;padding-right:8px}
+.tc-badge{font-size:.72rem;font-weight:700;padding:3px 8px;border-radius:99px;background:var(--tcl);color:var(--tc);white-space:nowrap}
+.tc-pct{font-size:2rem;font-weight:800;color:var(--tc);line-height:1;margin-bottom:6px}
+.tc-pbar{height:5px;background:var(--border);border-radius:99px;overflow:hidden;margin-bottom:14px}
+.tc-pbar-fill{height:100%;border-radius:99px;background:var(--tc);transition:width .8s cubic-bezier(.34,1.56,.64,1)}
+.tc-actions{display:flex;flex-direction:column;gap:7px}
+.tc-actions-row{display:flex;gap:7px}
+.btn-act{flex:1;padding:9px 10px;border-radius:10px;border:none;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit;text-align:center}
+.btn-study{background:var(--tc);color:#fff;padding:10px 10px}.btn-study:hover{filter:brightness(1.1)}
+.btn-learn{background:var(--tcl);color:var(--tc)}.btn-learn:hover{filter:brightness(.93)}
+.btn-quiz{background:var(--tcl);color:var(--tc);border:1.5px solid var(--tc)}.btn-quiz:hover{background:var(--tc);color:#fff}
+
+/* ─── FLASHCARD ─── */
+.mode-head{display:flex;align-items:center;gap:12px;padding:18px 0 14px}
+.mode-title{flex:1}.mode-title h2{font-size:1.15rem;font-weight:700}.mode-title p{font-size:.78rem;color:var(--muted)}
+.pill{font-size:.8rem;font-weight:600;color:var(--muted);background:var(--surface);padding:5px 12px;border-radius:99px;box-shadow:var(--sh);white-space:nowrap}
+
+.fc-wrap{perspective:1200px;margin-bottom:18px;cursor:pointer}
+.fc-inner{display:grid;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.4,0,.2,1)}
+.fc-inner.flipped{transform:rotateY(180deg)}
+.fc-face{grid-area:1/1;backface-visibility:hidden;border-radius:var(--r);box-shadow:var(--shl);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:30px 26px;text-align:center;min-height:280px}
+.fc-front{background:var(--surface);border-top:5px solid var(--tc)}
+.fc-front .fc-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--tc);margin-bottom:14px}
+.fc-front .fc-q{font-size:1.18rem;font-weight:600;line-height:1.55}
+.fc-front .fc-hint{margin-top:18px;font-size:.78rem;color:var(--muted)}
+.fc-back{background:var(--tcl);border-top:5px solid var(--tc);transform:rotateY(180deg);justify-content:flex-start;align-items:flex-start;text-align:left;overflow:auto}
+.fc-back .fc-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--tc);margin-bottom:10px}
+.fc-back .fc-a{font-size:1rem;line-height:1.75;color:var(--text)}
+.fc-svg{margin-top:16px;width:100%;border-radius:10px;overflow:hidden;background:#fff;padding:10px}
+
+.card-nav{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:18px}
+.btn-nav{width:42px;height:42px;border-radius:50%;border:none;background:var(--surface);color:var(--text);font-size:1.1rem;cursor:pointer;box-shadow:var(--sh);transition:all .2s;display:flex;align-items:center;justify-content:center}
+.btn-nav:hover:not(:disabled){background:var(--text);color:#fff}
+.btn-nav:disabled{opacity:.3;cursor:not-allowed}
+.btn-toquiz{padding:11px 22px;border-radius:12px;border:none;background:var(--tc);color:#fff;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s;box-shadow:var(--sh);font-family:inherit}
+.btn-toquiz:hover{filter:brightness(1.1);box-shadow:var(--shl)}
+
+/* ─── QUIZ ─── */
+.quiz-prog{display:flex;align-items:center;gap:12px;margin-top:10px}
+.qpbar{flex:1;height:5px;background:var(--border);border-radius:99px;overflow:hidden}
+.qpbar-fill{height:100%;border-radius:99px;background:var(--tc);transition:width .4s ease}
+.qplabel{font-size:.78rem;font-weight:600;color:var(--muted);white-space:nowrap}
+.qcard{background:var(--surface);border-radius:var(--r);padding:26px 22px;box-shadow:var(--shl);margin-bottom:14px}
+.qnum{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--tc);margin-bottom:10px}
+.qtext{font-size:1.05rem;font-weight:600;line-height:1.55;margin-bottom:18px}
+.opts{display:flex;flex-direction:column;gap:9px}
+.opt{padding:13px 16px;border-radius:11px;border:2px solid var(--border);background:var(--surface2);font-size:.92rem;cursor:pointer;transition:all .2s;text-align:left;width:100%;display:flex;align-items:flex-start;gap:11px;line-height:1.4;font-family:inherit}
+.opt:hover:not([disabled]){border-color:var(--tc);background:var(--tcl)}
+.opt[disabled]{cursor:default}
+.opt.correct{border-color:var(--ok);background:var(--okl);color:#065f46}
+.opt.wrong{border-color:var(--err);background:var(--errl);color:#991b1b}
+.opt.reveal{border-color:var(--ok);background:var(--okl);color:#065f46;border-style:dashed}
+.oletter{font-weight:700;font-size:.82rem;min-width:22px;height:22px;border-radius:6px;background:var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.opt.correct .oletter,.opt.reveal .oletter{background:var(--ok);color:#fff}
+.opt.wrong .oletter{background:var(--err);color:#fff}
+.qfb{margin-top:14px;padding:11px 15px;border-radius:10px;font-size:.88rem;font-weight:500;display:none}
+.qfb.show{display:block}
+.qfb.ok{background:var(--okl);color:#065f46}
+.qfb.err{background:var(--errl);color:#991b1b}
+.btn-next{width:100%;padding:13px;border-radius:12px;border:none;background:var(--tc);color:#fff;font-size:.95rem;font-weight:600;cursor:pointer;transition:all .2s;box-shadow:var(--sh);display:none;font-family:inherit;margin-top:14px}
+.btn-next.show{display:block}
+.btn-next:hover{filter:brightness(1.1)}
+
+/* ─── SUMMARY ─── */
+.summary{background:var(--surface);border-radius:var(--r);padding:30px 22px;text-align:center;box-shadow:var(--shl)}
+.sum-score{font-size:3.2rem;font-weight:800;line-height:1;margin:14px 0 6px;color:var(--tc)}
+.sum-sub{color:var(--muted);font-size:.9rem;margin-bottom:22px}
+.sum-list{text-align:left;margin-bottom:22px}
+.sum-list h3{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px}
+.sum-q{padding:9px 13px;border-radius:9px;margin-bottom:7px;font-size:.88rem;display:flex;align-items:flex-start;gap:9px;line-height:1.4}
+.sum-q.ok{background:var(--okl)}.sum-q.err{background:var(--errl)}
+.sum-qicon{font-size:.9rem;min-width:18px;margin-top:1px}
+.sum-actions{display:flex;gap:10px}
+.btn-sec{flex:1;padding:12px;border-radius:12px;border:2px solid var(--border);background:transparent;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit}
+.btn-sec:hover{background:var(--surface2)}
+.mastery-note{font-size:.82rem;color:var(--muted);margin-top:10px}
+
+/* ─── OVERVIEW ─── */
+.ov-header{padding:20px 0 14px}
+.ov-header h2{font-size:1.2rem;font-weight:700;margin-bottom:3px}
+.ov-header p{font-size:.8rem;color:var(--muted)}
+.ov-intro{background:var(--tcl);border-left:4px solid var(--tc);border-radius:0 var(--r) var(--r) 0;padding:16px 18px;margin-bottom:16px;font-size:.95rem;line-height:1.75;color:var(--text)}
+.ov-section{background:var(--surface);border-radius:var(--r);padding:20px;box-shadow:var(--sh);margin-bottom:14px}
+.ov-sec-title{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--tc);margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.cm-chain{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.cm-chain:last-child{margin-bottom:0}
+.cm-node{background:var(--tcl);color:var(--tc);padding:5px 10px;border-radius:8px;font-size:.81rem;font-weight:600;line-height:1.35;text-align:center}
+.cm-node.root{background:var(--tc);color:#fff}
+.cm-arrow{color:var(--tc);font-weight:700;font-size:.85rem;flex-shrink:0;opacity:.7}
+.ov-body p{font-size:.93rem;line-height:1.8;color:var(--text);margin-bottom:12px}
+.ov-body p:last-child{margin-bottom:0}
+.ov-body strong{color:var(--tc);font-weight:700}
+.watchout{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:#fffbeb;border-left:3px solid #f59e0b;border-radius:0 10px 10px 0;margin-bottom:8px;font-size:.9rem;line-height:1.6}
+.watchout:last-child{margin-bottom:0}
+.watchout-icon{font-size:1rem;flex-shrink:0;margin-top:2px}
+.btn-to-fc{display:block;width:100%;padding:15px;border-radius:14px;border:none;background:var(--tc);color:#fff;font-size:1rem;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:var(--shl);font-family:inherit;margin-top:18px}
+.btn-to-fc:hover{filter:brightness(1.1);transform:translateY(-1px);box-shadow:0 12px 40px rgba(0,0,0,.15)}
+
+/* ─── REVIEW MODAL ─── */
+.btn-review{margin-top:14px;padding:7px 14px;border-radius:9px;border:1.5px solid var(--tc);background:rgba(255,255,255,.55);color:var(--tc);font-size:.79rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit;align-self:flex-start}
+.btn-review:hover{background:var(--tc);color:#fff}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s ease}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-width:800px;max-height:85vh;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .4s cubic-bezier(.4,0,.2,1)}
+.modal-overlay.open .modal{transform:translateY(0)}
+.modal-header{padding:18px 20px 16px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:12px;background:var(--tcl);border-radius:20px 20px 0 0;flex-shrink:0}
+.modal-topic-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--tc);margin-bottom:3px}
+.modal-concept-title{font-size:1rem;font-weight:700;line-height:1.35;color:var(--text)}
+.modal-close-x{width:32px;height:32px;border-radius:50%;border:none;background:rgba(0,0,0,.1);color:var(--text);font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;font-family:inherit}
+.modal-close-x:hover{background:rgba(0,0,0,.25)}
+.modal-body{flex:1;overflow-y:auto;padding:18px 20px;-webkit-overflow-scrolling:touch}
+.modal-section{margin-bottom:20px}
+.modal-section:last-child{margin-bottom:0}
+.modal-sec-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--tc);margin-bottom:8px}
+.modal-section p{font-size:.93rem;line-height:1.78;color:var(--text)}
+.modal-section strong{color:var(--tc);font-weight:700}
+.modal-svg{margin-top:12px;border-radius:10px;overflow:hidden;background:var(--surface2);padding:10px}
+.modal-footer{padding:14px 20px;border-top:1px solid var(--border);flex-shrink:0}
+.btn-modal-close{width:100%;padding:12px;border-radius:12px;border:none;background:var(--surface2);color:var(--text);font-size:.93rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit}
+.btn-modal-close:hover{background:var(--border)}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal-overlay" class="modal-overlay" onclick="handleOverlayClick(event)">
+  <div class="modal" id="review-modal">
+    <div class="modal-header" id="modal-header">
+      <div style="flex:1">
+        <div class="modal-topic-label" id="modal-topic-label"></div>
+        <div class="modal-concept-title" id="modal-concept-title"></div>
+      </div>
+      <button class="modal-close-x" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn-modal-close" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+</div>
+<script>
+// ═══════════════════════════════════════════════════════════════
+// SVG DIAGRAMS
+// ═══════════════════════════════════════════════════════════════
+const SVGS = {
+karyotype: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 190" style="width:100%">
+<rect width="300" height="190" rx="8" fill="#f8fafc"/>
+<text x="150" y="16" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="bold" fill="#334155">Karyotype — Trisomy 21 (Down Syndrome)</text>
+<g font-family="sans-serif" font-size="8" fill="#64748b">
+${(()=>{
+  const rows=[[1,2,3,4,5,6],[7,8,9,10,11,12],[13,14,15,16,17,18],[19,20,21,22]];
+  const sexRow=['XX'];
+  let out='';
+  const chrH=[30,28,26,24,22,22,20,20,18,18,18,18,16,16,16,16,14,14,14,12,10,10,14];
+  rows.forEach((row,ri)=>{
+    row.forEach((num,ci)=>{
+      const x=16+ci*48;const y=28+ri*38;
+      const h=chrH[num-1]||10;
+      const is21=num===21;
+      const col=is21?'#ef4444':'#818cf8';
+      const n=is21?3:2;
+      const tw=n*7+(n-1)*3;
+      const sx=x+(38-tw)/2;
+      for(let j=0;j<n;j++){
+        const cx=sx+j*10;
+        out+=`<rect x="${cx}" y="${y}" width="7" height="${h}" rx="2" fill="${col}" opacity="0.85"/>`;
+        out+=`<rect x="${cx-0.5}" y="${y+h*0.42}" width="8" height="2" rx="1" fill="white" opacity="0.7"/>`;
+      }
+      out+=`<text x="${x+19}" y="${y+h+9}" text-anchor="middle" fill="${is21?'#ef4444':'#64748b'}" font-weight="${is21?'bold':'normal'}">${num}</text>`;
+    });
+  });
+  // Sex pair
+  const x=16+4*48;const y=28+4*38;
+  for(let j=0;j<2;j++){const cx=x+6+j*10;out+=`<rect x="${cx}" y="${y}" width="7" height="14" rx="2" fill="#06b6d4" opacity="0.85"/>`;out+=`<rect x="${cx-0.5}" y="${y+14*0.42}" width="8" height="2" rx="1" fill="white" opacity="0.7"/>`;}
+  out+=`<text x="${x+19}" y="${y+14+9}" text-anchor="middle" fill="#06b6d4">XX</text>`;
+  return out;
+})()}
+</g>
+<text x="150" y="183" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#ef4444" font-weight="bold">↑ Chromosome 21 has 3 copies → Down Syndrome</text>
+</svg>`,
+
+mitosis: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 130" style="width:100%">
+<rect width="320" height="130" rx="8" fill="#f8fafc"/>
+<text x="160" y="15" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="bold" fill="#334155">Phases of Mitosis (PMAT)</text>
+${[
+  {x:20,label:'Prophase',color:'#818cf8',desc:'Chromosomes condense'},
+  {x:100,label:'Metaphase',color:'#10b981',desc:'Line up at equator'},
+  {x:180,label:'Anaphase',color:'#f59e0b',desc:'Pulled to poles'},
+  {x:260,label:'Telophase',color:'#06b6d4',desc:'Two nuclei form'},
+].map(({x,label,color,desc},i)=>{
+  const cx=x+20,cy=65;
+  let inner='';
+  if(i===0){// Prophase: scattered condensed chromosomes
+    inner=`<ellipse cx="${cx}" cy="${cy}" rx="20" ry="20" fill="none" stroke="${color}" stroke-width="1.5" stroke-dasharray="3,2"/>
+    <line x1="${cx-10}" y1="${cy-8}" x2="${cx-10}" y2="${cy+8}" stroke="${color}" stroke-width="3" stroke-linecap="round"/>
+    <line x1="${cx}" y1="${cy-11}" x2="${cx}" y2="${cy+11}" stroke="${color}" stroke-width="3" stroke-linecap="round"/>
+    <line x1="${cx+10}" y1="${cy-8}" x2="${cx+10}" y2="${cy+8}" stroke="${color}" stroke-width="3" stroke-linecap="round"/>`;
+  }else if(i===1){// Metaphase: lined up at center
+    inner=`<ellipse cx="${cx}" cy="${cy}" rx="20" ry="20" fill="none" stroke="${color}" stroke-width="1.5"/>
+    <line x1="${cx-5}" y1="${cy-11}" x2="${cx-5}" y2="${cy+11}" stroke="${color}" stroke-width="3" stroke-linecap="round"/>
+    <line x1="${cx+5}" y1="${cy-11}" x2="${cx+5}" y2="${cy+11}" stroke="${color}" stroke-width="3" stroke-linecap="round"/>
+    <line x1="${cx-18}" y1="${cy}" x2="${cx+18}" y2="${cy}" stroke="#94a3b8" stroke-width="1" stroke-dasharray="2,2"/>`;
+  }else if(i===2){// Anaphase: pulling apart
+    inner=`<ellipse cx="${cx}" cy="${cy}" rx="20" ry="20" fill="none" stroke="${color}" stroke-width="1.5"/>
+    <line x1="${cx-7}" y1="${cy-14}" x2="${cx-7}" y2="${cy-4}" stroke="${color}" stroke-width="3" stroke-linecap="round"/>
+    <line x1="${cx+7}" y1="${cy-14}" x2="${cx+7}" y2="${cy-4}" stroke="${color}" stroke-width="3" stroke-linecap="round"/>
+    <line x1="${cx-7}" y1="${cy+4}" x2="${cx-7}" y2="${cy+14}" stroke="${color}" stroke-width="3" stroke-linecap="round"/>
+    <line x1="${cx+7}" y1="${cy+4}" x2="${cx+7}" y2="${cy+14}" stroke="${color}" stroke-width="3" stroke-linecap="round"/>`;
+  }else{// Telophase: two nuclei
+    inner=`<ellipse cx="${cx}" cy="${cy-10}" rx="17" ry="11" fill="none" stroke="${color}" stroke-width="1.5"/>
+    <ellipse cx="${cx}" cy="${cy+10}" rx="17" ry="11" fill="none" stroke="${color}" stroke-width="1.5"/>
+    <line x1="${cx-5}" y1="${cy-16}" x2="${cx-5}" y2="${cy-5}" stroke="${color}" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="${cx+5}" y1="${cy-16}" x2="${cx+5}" y2="${cy-5}" stroke="${color}" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="${cx-5}" y1="${cy+5}" x2="${cx-5}" y2="${cy+16}" stroke="${color}" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="${cx+5}" y1="${cy+5}" x2="${cx+5}" y2="${cy+16}" stroke="${color}" stroke-width="2.5" stroke-linecap="round"/>`;
+  }
+  return `<g>${inner}
+  <text x="${cx}" y="${cy+32}" text-anchor="middle" font-family="sans-serif" font-size="9" font-weight="bold" fill="${color}">${label}</text>
+  <text x="${cx}" y="${cy+42}" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#64748b">${desc}</text>
+  </g>`;
+}).join('')}
+</svg>`,
+
+replication: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 160" style="width:100%">
+<rect width="300" height="160" rx="8" fill="#f8fafc"/>
+<text x="150" y="16" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="bold" fill="#334155">DNA Replication Fork</text>
+<g font-family="sans-serif" font-size="9">
+<!-- Original double helix going right, fork at x=160 -->
+<!-- Top strand: original + leading new strand -->
+<line x1="20" y1="55" x2="160" y2="55" stroke="#94a3b8" stroke-width="2.5"/>
+<line x1="20" y1="70" x2="160" y2="70" stroke="#94a3b8" stroke-width="2.5"/>
+<!-- Rungs of ladder -->
+${[30,50,70,90,110,130,150].map(x=>`<line x1="${x}" y1="55" x2="${x}" y2="70" stroke="#cbd5e1" stroke-width="1.5"/>`).join('')}
+<!-- Fork point -->
+<circle cx="160" cy="62" r="5" fill="#f59e0b"/>
+<!-- Leading strand (top, continuous) -->
+<line x1="160" y1="50" x2="280" y2="30" stroke="#818cf8" stroke-width="2.5"/>
+<text x="285" y="34" font-size="8" fill="#818cf8" font-weight="bold">New (leading)</text>
+<!-- Template for leading -->
+<line x1="160" y1="55" x2="280" y2="35" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3,2"/>
+<!-- Lagging strand (bottom) -->
+<line x1="160" y1="74" x2="280" y2="95" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3,2"/>
+<!-- Okazaki fragments -->
+<line x1="190" y1="100" x2="230" y2="107" stroke="#f59e0b" stroke-width="2.5"/>
+<line x1="240" y1="107" x2="276" y2="113" stroke="#f59e0b" stroke-width="2.5"/>
+<text x="195" y="122" font-size="8" fill="#f59e0b" font-weight="bold">Okazaki fragments</text>
+<text x="191" y="132" font-size="8" fill="#64748b">(lagging strand)</text>
+<!-- Labels -->
+<text x="14" y="51" font-size="8" fill="#64748b">Original</text>
+<text x="14" y="62" font-size="8" fill="#64748b">DNA</text>
+<text x="155" y="20" font-size="8" fill="#f59e0b" font-weight="bold">Helicase</text>
+<text x="148" y="28" font-size="8" fill="#f59e0b">(unwinds)</text>
+<!-- Arrow at fork -->
+<polygon points="160,62 150,57 150,67" fill="#f59e0b"/>
+</g>
+</svg>`,
+
+translation: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 165" style="width:100%">
+<rect width="300" height="165" rx="8" fill="#f8fafc"/>
+<text x="150" y="16" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="bold" fill="#334155">Translation — Protein Synthesis</text>
+<g font-family="sans-serif" font-size="9">
+<!-- mRNA strand -->
+<rect x="20" y="115" width="260" height="16" rx="3" fill="#e0e7ff" stroke="#818cf8" stroke-width="1.5"/>
+<text x="150" y="127" text-anchor="middle" font-size="8" fill="#4338ca" font-weight="bold">mRNA  ···  AUG · UUC · GAA · UCA · UAA ···</text>
+<text x="25" y="150" font-size="8" fill="#818cf8">5'</text>
+<text x="268" y="150" font-size="8" fill="#818cf8">3'</text>
+<!-- Ribosome -->
+<rect x="60" y="80" width="80" height="40" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+<text x="100" y="96" text-anchor="middle" font-size="8" fill="#92400e" font-weight="bold">Ribosome</text>
+<text x="100" y="108" text-anchor="middle" font-size="7.5" fill="#92400e">(reads codons)</text>
+<!-- tRNA -->
+<g transform="translate(90,48)">
+<path d="M0,30 L10,0 L20,30 Z" fill="#d1fae5" stroke="#10b981" stroke-width="1.5"/>
+<text x="10" y="22" text-anchor="middle" font-size="7.5" fill="#065f46">tRNA</text>
+<text x="10" y="44" text-anchor="middle" font-size="7" fill="#64748b">anticodon</text>
+</g>
+<!-- Amino acid on tRNA -->
+<circle cx="100" cy="44" r="9" fill="#10b981"/>
+<text x="100" y="48" text-anchor="middle" font-size="7.5" fill="white" font-weight="bold">AA</text>
+<!-- Growing polypeptide chain -->
+<text x="175" y="72" font-size="8" fill="#64748b">Growing polypeptide:</text>
+${[195,210,225,240].map((x,i)=>`<circle cx="${x}" cy="90" r="8" fill="#818cf8" opacity="${0.5+i*0.15}"/><text x="${x}" y="94" text-anchor="middle" font-size="7" fill="white">AA</text>`).join('')}
+<path d="M195,90 L210,90 L225,90 L240,90" stroke="#818cf8" stroke-width="1" fill="none"/>
+<!-- Labels -->
+<text x="100" y="158" text-anchor="middle" font-size="8" fill="#4338ca">codon (AUG)</text>
+<line x1="100" y1="131" x2="100" y2="154" stroke="#818cf8" stroke-width="1" stroke-dasharray="2,2"/>
+</g>
+</svg>`,
+
+naturalSelection: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 310 155" style="width:100%">
+<rect width="310" height="155" rx="8" fill="#f8fafc"/>
+<text x="155" y="15" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="bold" fill="#334155">Types of Natural Selection</text>
+<g font-family="sans-serif">
+${[
+  {ox:10, label:'Stabilizing', color:'#10b981', shade:'middle'},
+  {ox:110, label:'Directional', color:'#818cf8', shade:'right'},
+  {ox:210, label:'Disruptive', color:'#f59e0b', shade:'both'},
+].map(({ox,label,color,shade})=>{
+  const bx=ox, by=130, bw=90, bh=70;
+  const cx=ox+45;
+  // Bell curve path
+  const bell=`M${ox+5},${by} C${ox+15},${by} ${ox+25},${by-bh} ${cx},${by-bh} C${ox+65},${by-bh} ${ox+75},${by} ${ox+85},${by}`;
+  // Shade region
+  let shadeEl='';
+  if(shade==='middle'){
+    shadeEl=`<path d="M${cx-18},${by} C${cx-15},${by} ${cx-10},${by-bh*0.85} ${cx},${by-bh} C${cx+10},${by-bh} ${cx+15},${by} ${cx+18},${by} Z" fill="${color}" opacity="0.35"/>`;
+  }else if(shade==='right'){
+    shadeEl=`<path d="M${cx+10},${by} C${cx+20},${by} ${cx+30},${by-bh*0.7} ${cx+35},${by-bh*0.4} L${ox+85},${by} Z" fill="${color}" opacity="0.45"/>`;
+  }else{
+    shadeEl=`<path d="M${ox+5},${by} C${ox+15},${by} ${ox+22},${by-bh*0.6} ${ox+27},${by-bh*0.3} L${cx-18},${by} Z" fill="${color}" opacity="0.45"/>
+    <path d="M${cx+18},${by} C${cx+20},${by} ${ox+68},${by-bh*0.3} ${ox+73},${by-bh*0.6} C${ox+78},${by} ${ox+83},${by} ${ox+85},${by} Z" fill="${color}" opacity="0.45"/>`;
+  }
+  return `<g>
+  <line x1="${ox+5}" y1="${by}" x2="${ox+85}" y2="${by}" stroke="#cbd5e1" stroke-width="1"/>
+  ${shadeEl}
+  <path d="${bell}" fill="none" stroke="${color}" stroke-width="2"/>
+  <text x="${cx}" y="${by+14}" text-anchor="middle" font-size="9" font-weight="bold" fill="${color}">${label}</text>
+  <text x="${cx}" y="${by+24}" text-anchor="middle" font-size="8" fill="#64748b">${shade==='middle'?'Middle survives':shade==='right'?'One extreme wins':'Both extremes win'}</text>
+  <text x="${cx}" y="${by+34}" text-anchor="middle" font-size="7.5" fill="#94a3b8">${shade==='middle'?'→ less variation':shade==='right'?'→ population shifts':'→ two groups form'}</text>
+  </g>`;
+}).join('')}
+</g>
+</svg>`,
+
+popGrowth: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 165" style="width:100%">
+<rect width="280" height="165" rx="8" fill="#f8fafc"/>
+<text x="140" y="16" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="bold" fill="#334155">Population Growth</text>
+<g font-family="sans-serif">
+<!-- Axes -->
+<line x1="45" y1="25" x2="45" y2="130" stroke="#94a3b8" stroke-width="1.5"/>
+<line x1="45" y1="130" x2="265" y2="130" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="22" y="80" font-size="9" fill="#64748b" transform="rotate(-90,22,80)">Population</text>
+<text x="155" y="148" text-anchor="middle" font-size="9" fill="#64748b">Time</text>
+<!-- Carrying capacity line -->
+<line x1="45" y1="45" x2="265" y2="45" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4,3"/>
+<text x="268" y="49" font-size="8" fill="#64748b">K</text>
+<!-- J-curve (exponential) - blue -->
+<path d="M45,128 C100,127 140,120 175,100 C200,85 220,65 260,30" fill="none" stroke="#818cf8" stroke-width="2.5"/>
+<text x="245" y="25" font-size="9" fill="#818cf8" font-weight="bold">J</text>
+<!-- S-curve (logistic) - green -->
+<path d="M45,128 C80,128 110,125 135,110 C155,97 168,72 190,55 C210,43 230,44 262,44" fill="none" stroke="#10b981" stroke-width="2.5"/>
+<text x="265" y="48" font-size="9" fill="#10b981" font-weight="bold">S</text>
+<!-- Legend -->
+<line x1="55" y1="20" x2="75" y2="20" stroke="#818cf8" stroke-width="2.5"/><text x="78" y="24" font-size="8.5" fill="#818cf8">Exponential (J)</text>
+<line x1="155" y1="20" x2="175" y2="20" stroke="#10b981" stroke-width="2.5"/><text x="178" y="24" font-size="8.5" fill="#10b981">Logistic (S)</text>
+</g>
+</svg>`
+};
+
+// ═══════════════════════════════════════════════════════════════
+// TOPIC DATA
+// ═══════════════════════════════════════════════════════════════
+const TOPICS = [
+{
+  id:'cell',name:'Cell Reproduction',color:'#818cf8',colorLight:'#eef2ff',examQ:17,
+  cards:[
+    {q:'What are the stages of the cell cycle?',a:'Interphase (G1 → S → G2) and the Mitotic phase (mitosis + cytokinesis). The cell spends most of its time in interphase.'},
+    {q:'What phases make up interphase?',a:'G1 (cell growth and normal functions), S phase (DNA replication — each chromosome is copied), and G2 (cell prepares for division).'},
+    {q:'Where does a cell spend most of its life?',a:'In G1 of interphase — carrying out its regular functions and growing before committing to division.'},
+    {q:'How do cancerous cells alter the cell cycle?',a:'They bypass normal checkpoints that control when and how often a cell divides, resulting in uncontrolled, unlimited cell division.'},
+    {q:'What information can you get from a karyotype?',a:'Total chromosome number, whether chromosomes are missing or extra (e.g., trisomy 21 = Down syndrome), and the organism\'s biological sex (XX = female, XY = male).',svg:'karyotype'},
+    {q:'What does trisomy look like on a karyotype?',a:'Three chromosomes at one pair position instead of the usual two. Trisomy 21 (three copies of chromosome 21) causes Down syndrome.',svg:'karyotype'},
+    {q:'Define: chromatin, chromosome, sister chromatid, spindle, centromere',a:'Chromatin = loosely coiled DNA in the nucleus. Chromosome = condensed DNA (visible during division). Sister chromatids = identical copies joined at the centromere. Spindle = protein fibers that pull chromosomes apart. Centromere = junction holding sister chromatids together.'},
+    {q:'What are the phases of mitosis in order?',a:'Prophase → Metaphase → Anaphase → Telophase (PMAT), then cytokinesis. PMAT is the mnemonic.',svg:'mitosis'},
+    {q:'What are the products of mitosis?',a:'Two genetically identical diploid (2n) daughter cells, identical to each other and to the parent cell.'},
+    {q:'How does cytokinesis differ in plant vs. animal cells?',a:'Animal cells pinch inward (cleavage furrow). Plant cells build a new cell plate down the middle (because the rigid cell wall can\'t pinch).'},
+    {q:'Define: diploid, haploid, gamete, zygote, homologous pair, crossing over',a:'Diploid (2n) = two full sets of chromosomes. Haploid (n) = one set. Gamete = sex cell (sperm/egg). Zygote = fertilized egg. Homologous pair = two matching chromosomes (one from each parent). Crossing over = exchange of DNA segments between homologs during meiosis I.'},
+    {q:'What are the products of meiosis?',a:'Four genetically unique haploid (n) cells (gametes). They are NOT identical to each other or to the parent cell.'},
+    {q:'Where in the body does meiosis occur?',a:'In the gonads only — testes (producing sperm) and ovaries (producing eggs).'},
+    {q:'When does crossing over occur and why does it matter?',a:'During Prophase I of meiosis. Homologous chromosomes exchange segments, shuffling alleles and dramatically increasing genetic diversity.'},
+    {q:'How do mitosis and meiosis compare?',a:'Mitosis: 1 division → 2 identical diploid cells (for growth/repair). Meiosis: 2 divisions → 4 unique haploid cells (for sexual reproduction).'},
+    {q:'When do homologous pairs separate? When do sister chromatids separate?',a:'Homologous pairs separate in Meiosis I. Sister chromatids separate in Meiosis II. (Mitosis: sister chromatids separate in anaphase.)'},
+    {q:'What is nondisjunction?',a:'When chromosomes fail to separate properly during meiosis. The result: gametes with too many or too few chromosomes. Can cause trisomy (extra chromosome) or monosomy (missing chromosome) after fertilization.'},
+    {q:'Do gametes have homologous pairs?',a:'No. Gametes are haploid (n) — they carry only one chromosome from each homologous pair. Homologous pairs are only present in diploid (2n) cells.'},
+  ],
+  quiz:[
+    {q:'A cell is found to have 3 copies of chromosome 21. What most likely caused this?',opts:['A substitution mutation in the DNA sequence','Nondisjunction during meiosis','Crossing over between homologous pairs','The cell skipping the S phase of interphase'],ans:1},
+    {q:'A scientist observes chromosomes lined up along the cell\'s equator. Which phase of mitosis is this?',opts:['Prophase','Anaphase','Metaphase','Telophase'],ans:2},
+    {q:'After meiosis is complete, how many cells are produced and what is their ploidy?',opts:['2 genetically identical diploid cells','4 genetically identical diploid cells','2 genetically unique haploid cells','4 genetically unique haploid cells'],ans:3},
+    {q:'Crossing over increases genetic diversity. During which phase of meiosis does crossing over occur?',opts:['Prophase I','Metaphase II','Anaphase I','Telophase II'],ans:0},
+    {q:'A plant cell and an animal cell both complete mitosis. What is the key difference in cytokinesis?',opts:['Plant cells pinch inward; animal cells form a cell plate','Animal cells pinch inward; plant cells form a cell plate','Both cells form a cell plate at the same time','Cytokinesis is identical in plant and animal cells'],ans:1},
+    {q:'A karyotype shows 45 chromosomes with only one X sex chromosome (XO). What most likely caused this?',opts:['Crossing over during Prophase I','Nondisjunction resulting in a missing sex chromosome','A point mutation in the X chromosome','The cell skipping G2 phase'],ans:1},
+    {q:'Cancer cells are dangerous partly because they bypass checkpoints. What is the direct result of bypassing these checkpoints?',opts:['They replicate DNA twice each cycle','They skip interphase entirely','They divide uncontrollably without stopping','They switch from mitosis to meiosis'],ans:2},
+    {q:'A cell has a diploid number of 2n = 46. After completing meiosis, what is the chromosome number in each daughter cell?',opts:['46 — still diploid','92 — tetraploid from doubling','23 — haploid','12 — aneuploid from random loss'],ans:2},
+  ]
+},
+{
+  id:'genetics',name:'Genetics',color:'#10b981',colorLight:'#d1fae5',examQ:18,
+  cards:[
+    {q:'Define homozygous vs. heterozygous',a:'Homozygous = two identical alleles (BB or bb). Heterozygous = two different alleles (Bb). Think "homo" = same, "hetero" = different.'},
+    {q:'Define dominant vs. recessive',a:'Dominant allele is expressed whenever it is present (written with a capital letter). Recessive allele is only expressed when the organism is homozygous recessive (two lowercase alleles).'},
+    {q:'What is the difference between F1, F2, and P generations?',a:'P = original parent generation. F1 = first filial generation (offspring of P cross). F2 = second generation (offspring of two F1 individuals). Mendel worked with peas across these generations.'},
+    {q:'What is a dihybrid cross?',a:'A cross that tracks two traits simultaneously. Requires a 4×4 Punnett square (16 boxes). The classic ratio is 9:3:3:1 for two unlinked traits.'},
+    {q:'What is the Law of Independent Assortment?',a:'Alleles for different traits (on different chromosomes) are distributed to gametes independently of one another — one trait\'s inheritance doesn\'t influence another\'s.'},
+    {q:'What is the Law of Segregation?',a:'Each organism has two alleles per trait; during gamete formation, these alleles separate so each gamete receives only one allele.'},
+    {q:'What words signal codominance vs. incomplete dominance?',a:'Codominance: BOTH traits are fully visible as distinct patches (e.g., roan cattle — separate red AND white hairs). Incomplete dominance: traits BLEND into an intermediate phenotype (e.g., red + white → pink flowers).'},
+    {q:'What are the sex chromosomes for males and females?',a:'Females = XX. Males = XY. The Y chromosome determines male sex development.'},
+    {q:'Are sex-linked traits on the X or Y chromosome?',a:'Almost always on the X chromosome. Very few genes are on the Y (mainly male-determining genes).'},
+    {q:'Why can only females be carriers of sex-linked recessive traits?',a:'Males only have one X chromosome — if they carry the recessive allele, they express the trait (no second X to mask it). Females can carry a recessive allele on one X while the dominant allele on the other X masks it.'},
+    {q:'Why are sex-linked recessive traits more common in males?',a:'Males only need one copy of the recessive allele (on their single X) to show the trait. Females need two copies (one on each X) to be affected.'},
+    {q:'What is a polygenic trait?',a:'A trait controlled by multiple genes working together. Produces a continuous, bell-curve distribution of phenotypes (e.g., height, skin color, intelligence).'},
+    {q:'What do the symbols in a pedigree mean?',a:'Circle = female. Square = male. Filled shape = affected individual. Half-filled = carrier. Horizontal line = mating. Vertical line = offspring connection.'},
+    {q:'How do you identify autosomal dominant from a pedigree?',a:'The trait appears in every generation. Every affected individual has at least one affected parent. Males and females are affected equally.'},
+    {q:'How do you identify autosomal recessive from a pedigree?',a:'The trait can skip generations. Two unaffected parents can have an affected child (both parents are carriers). Males and females are affected equally.'},
+    {q:'How do you identify sex-linked recessive from a pedigree?',a:'Mostly males are affected. Carrier mothers (unaffected) pass the trait to sons. Affected fathers cannot pass the trait to sons (they pass the Y chromosome to sons).'},
+  ],
+  quiz:[
+    {q:'Two parents are both carriers for a recessive disorder (Aa × Aa). What is the probability that their child will be affected (aa)?',opts:['0% — neither parent is affected','25% — one in four chance','50% — half their children will be affected','75% — most children will be affected'],ans:1},
+    {q:'A man has red-green color blindness (X^b Y). His wife has normal vision and is NOT a carrier (X^B X^B). What percentage of their sons will be color blind?',opts:['0% — sons inherit Y from dad, not the X^b','25% — one in four sons affected','50% — half the sons will be affected','100% — all sons inherit the X^b'],ans:0},
+    {q:'Red and white snapdragons are crossed to produce all pink F1 plants. Two pink plants are then crossed (RW × RW). What is the expected ratio of offspring colors?',opts:['3 red : 1 white','All pink','1 red : 2 pink : 1 white','1 red : 1 white'],ans:2},
+    {q:'A pedigree shows a trait that skips generations. Two unaffected parents have an affected child. This pattern most likely indicates:',opts:['Autosomal dominant','X-linked dominant','Y-linked inheritance','Autosomal recessive'],ans:3},
+    {q:'An organism has the genotype AaBb. How many genetically distinct types of gametes can it produce?',opts:['1 type (AaBb gametes)','2 types (AB and ab)','4 types (AB, Ab, aB, ab)','8 types'],ans:2},
+    {q:'In cattle, red (R) and white (W) alleles produce roan coat — individual hairs are either red or white, both colors fully visible in the same animal. This pattern is an example of:',opts:['Incomplete dominance (blended color)','Codominance (both traits fully expressed)','Polygenic inheritance','Sex-linkage'],ans:1},
+    {q:'Height in humans shows a continuous bell-curve distribution in the population. This pattern is most characteristic of:',opts:['Codominance between two alleles','Sex-linked inheritance','Polygenic inheritance controlled by many genes','A single dominant allele'],ans:2},
+    {q:'A woman is a carrier for hemophilia (X^H X^h). Her husband is unaffected (X^H Y). What is the probability that their son will have hemophilia?',opts:['0% — sons get X from mom only if it\'s X^H','25% — one in four children','50% — sons have equal chance of X^H or X^h','100% — all sons inherit the X^h'],ans:2},
+  ]
+},
+{
+  id:'dna',name:'DNA, Protein Synthesis & Biotech',color:'#f59e0b',colorLight:'#fef3c7',examQ:18,
+  cards:[
+    {q:'What are the three parts of a nucleotide?',a:'1) Phosphate group, 2) 5-carbon sugar (deoxyribose in DNA, ribose in RNA), 3) Nitrogenous base (A, T, G, C in DNA; A, U, G, C in RNA).'},
+    {q:'What are the base pairing rules in DNA?',a:'A pairs with T (two hydrogen bonds). G pairs with C (three hydrogen bonds). In RNA: A pairs with U instead of T. Remember: AT bonds are weaker; GC bonds are stronger.'},
+    {q:'What does "semi-conservative replication" mean?',a:'Each new DNA molecule consists of one original (parental) strand and one newly synthesized strand. The original strands are conserved and serve as templates.'},
+    {q:'What are Okazaki fragments?',a:'Short DNA fragments produced on the lagging strand during replication. Because DNA polymerase can only synthesize 5\'→3\', the lagging strand is made in pieces that are later joined together.',svg:'replication'},
+    {q:'What is the leading vs. lagging strand?',a:'Leading strand: synthesized continuously toward the replication fork (5\'→3\' direction matches). Lagging strand: synthesized in fragments (Okazaki fragments) away from the fork, because it runs in the opposite direction.',svg:'replication'},
+    {q:'What are the differences between DNA and RNA?',a:'DNA: double-stranded, contains thymine (T), uses deoxyribose sugar, stays in nucleus. RNA: single-stranded, contains uracil (U) instead of T, uses ribose sugar, travels out of nucleus.'},
+    {q:'What happens during transcription?',a:'In the nucleus, RNA polymerase uses one strand of DNA as a template to build a complementary mRNA strand. Direction: DNA → mRNA. The mRNA carries the genetic code out of the nucleus.'},
+    {q:'What happens during translation?',a:'At the ribosome (in the cytoplasm), the mRNA sequence is read in triplets (codons). tRNA molecules bring matching amino acids. The amino acids are linked to form a polypeptide (protein). Direction: mRNA → protein.',svg:'translation'},
+    {q:'What is a codon? An anticodon?',a:'Codon = 3-base sequence on mRNA that specifies one amino acid (e.g., AUG = methionine). Anticodon = complementary 3-base sequence on tRNA that matches the codon and delivers the correct amino acid.'},
+    {q:'What are the start and stop codons?',a:'Start codon: AUG — begins translation and codes for methionine (every protein starts with Met). Stop codons: UAA, UAG, UGA — these signal the ribosome to release the polypeptide.'},
+    {q:'What are the three types of point mutations?',a:'Substitution: one base swapped for another. Insertion: one or more bases added. Deletion: one or more bases removed. Insertions and deletions cause frameshift mutations; substitutions may not.'},
+    {q:'What are frameshift mutations and why are they more damaging?',a:'Insertions and deletions shift the reading frame, changing every single codon downstream of the mutation. This usually produces a completely different (nonfunctional) protein. Substitutions only change one codon.'},
+    {q:'Why do some mutations have no effect on the protein?',a:'Because the genetic code is redundant — multiple different codons code for the same amino acid. A substitution that doesn\'t change the amino acid is called a silent mutation.'},
+    {q:'How does gel electrophoresis work?',a:'DNA is loaded into wells in a gel. An electric current pulls DNA toward the positive end. Smaller fragments travel farther. The resulting pattern of bands is compared between samples.',},
+    {q:'What is a DNA fingerprint?',a:'A pattern of DNA fragment bands unique to each individual (except identical twins). Used in forensics (matching crime scene DNA), paternity testing, and identifying individuals.'},
+    {q:'What is recombinant DNA?',a:'DNA artificially created by combining genetic material from two different organisms or sources. Used to produce useful proteins (e.g., insulin) in bacteria or create transgenic organisms.'},
+    {q:'What is CRISPR and what is it used for?',a:'A gene-editing tool that can precisely cut DNA at specific sequences and insert, delete, or modify genes. Used for disease research, potential genetic therapies, and agricultural modifications.'},
+    {q:'What are clones and how are they made?',a:'Clones are genetically identical copies of an organism. Made by somatic cell nuclear transfer: removing the nucleus from an egg cell and replacing it with the nucleus of a somatic (body) cell, then stimulating it to develop.'},
+  ],
+  quiz:[
+    {q:'A DNA template strand reads 3\'-TACGCC-5\'. What is the mRNA sequence produced during transcription?',opts:['5\'-ATGCGG-3\'  (DNA bases, wrong sugar)','5\'-AUGCGG-3\'  (correct mRNA with uracil)','5\'-UACGCC-3\'  (same as template, wrong)','5\'-TACGCC-3\'  (unchanged template strand)'],ans:1},
+    {q:'In gel electrophoresis, Fragment A is 400 base pairs and Fragment B is 2,000 base pairs. Which fragment migrates farther from the well?',opts:['Fragment A (400 bp) — smaller fragments travel farther','Fragment B (2,000 bp) — larger fragments travel farther','Both travel the same distance','The positively charged fragment travels farther'],ans:0},
+    {q:'A mutation changes the mRNA codon AAA to AAG. Both codons code for the amino acid lysine. This is an example of:',opts:['A frameshift mutation','A nonsense mutation (creates a stop codon)','A silent mutation (no change in protein)','A missense mutation (changes the amino acid)'],ans:2},
+    {q:'A single nucleotide is inserted into the middle of a gene. What is the most likely result?',opts:['Substitution — only one amino acid changes','Silent mutation — the protein is unchanged','Frameshift — every codon after the insertion is altered','Nonsense mutation — a stop codon is immediately created'],ans:2},
+    {q:'What does "semi-conservative replication" mean?',opts:['DNA is fully degraded and rebuilt from scratch each cycle','Only the lagging strand is replicated','Each new DNA molecule contains one original and one new strand','DNA replication is paused halfway through S phase'],ans:2},
+    {q:'A scientist wants bacteria to produce human insulin. The most critical first step is to:',opts:['Use gel electrophoresis to separate insulin proteins','Insert the human insulin gene into bacterial DNA (recombinant DNA)','Apply CRISPR to delete the bacterial genome','Clone the bacteria before adding any human genes'],ans:1},
+    {q:'The mRNA codon AUG signals which of the following?',opts:['Stop translation and release the polypeptide','Begin translation and insert methionine as the first amino acid','A frameshift in the reading frame','Start transcription in the nucleus'],ans:1},
+    {q:'A ribosome translating an mRNA strand encounters the codon UAA. What happens?',opts:['A tRNA delivers an amino acid matching UAA','The ribosome pauses and waits for the next tRNA','Translation stops and the completed polypeptide is released','The mRNA is immediately sent back to the nucleus'],ans:2},
+  ]
+},
+{
+  id:'evo',name:'Evolution & Ecology',color:'#06b6d4',colorLight:'#cffafe',examQ:17,
+  cards:[
+    {q:'What did Darwin propose as the mechanism of evolution?',a:'Natural selection: individuals with heritable traits better suited to their environment survive longer and reproduce more, passing those traits to offspring. Over generations, favorable traits become more common in the population.'},
+    {q:'What is "fitness" in evolutionary terms?',a:'Fitness = an organism\'s ability to survive AND reproduce in its specific environment. High fitness means more offspring that carry your genes. It has nothing to do with physical strength.'},
+    {q:'Can an individual evolve?',a:'No. Evolution happens to populations over many generations — it is a change in allele frequencies in a gene pool. Individuals can adapt behaviorally, but they cannot evolve.'},
+    {q:'What is a species?',a:'A group of organisms that can interbreed naturally and produce fertile (reproductively capable) offspring. Members of different species cannot produce fertile offspring together.'},
+    {q:'What is an adaptation?',a:'A heritable trait that increases an organism\'s fitness in its environment. Adaptations arise through natural selection over many generations.'},
+    {q:'What are the four major lines of evidence for evolution?',a:'1) Fossil record (shows change over time). 2) Comparative anatomy (homologous and vestigial structures). 3) Biogeography (species distribution matches evolutionary history). 4) Molecular evidence (DNA/protein comparisons show relationships).'},
+    {q:'Which lines of evidence would Darwin NOT have known about?',a:'Molecular/DNA evidence — genetics and DNA structure were unknown in Darwin\'s time (1800s). Mendel\'s work wasn\'t integrated with evolution until the Modern Synthesis (1940s).'},
+    {q:'What is the difference between homologous and analogous structures?',a:'Homologous: same underlying structure, different function, evidence of shared ancestry (e.g., human arm / whale flipper / bat wing — all have the same bones). Analogous: similar function, different structure, no shared ancestry (e.g., bird wing vs. insect wing).'},
+    {q:'What are vestigial structures?',a:'Remnants of structures that had a function in ancestors but are reduced or nonfunctional in current descendants. Examples: human tailbone (coccyx), whale pelvis bones, appendix, goosebumps.'},
+    {q:'What is microevolution?',a:'Small-scale changes in allele frequencies within a population over time. This is evolution happening at the population level, visible within one species.'},
+    {q:'What is Hardy-Weinberg equilibrium?',a:'A theoretical state where allele frequencies in a population remain constant across generations. Requires: no mutation, no natural selection, random mating, no gene flow, and a large population. Rarely exists in nature — any violation causes evolution.'},
+    {q:'What is genetic drift?',a:'Random changes in allele frequencies due to chance events, NOT selection. More significant in small populations where chance has a larger proportional effect. Can eliminate alleles entirely.'},
+    {q:'Describe the bottleneck effect and founder effect.',a:'Bottleneck: population is drastically reduced by a disaster (e.g., disease, earthquake). Surviving gene pool has much less diversity. Founder effect: a small group breaks off and colonizes a new area, carrying only a subset of the original genetic variation.',},
+    {q:'What is gene flow?',a:'The movement of alleles between populations via migration. Organisms moving in bring new alleles; organisms leaving take alleles away. Gene flow tends to make populations more similar over time.'},
+    {q:'What are the four types of natural selection?',a:'Stabilizing (middle phenotype favored → less variation). Directional (one extreme favored → population shifts). Disruptive (both extremes favored → two groups form). Sexual selection (traits favored for mating success regardless of survival).',svg:'naturalSelection'},
+    {q:'What is the difference between a cladogram and a phylogenetic tree?',a:'Both show evolutionary relationships. A cladogram shows branching order only (relative relationships). A phylogenetic tree adds time scale and branch lengths that reflect amount of evolutionary change.'},
+    {q:'How do you find the most closely related species on a cladogram?',a:'The two species that share the most recent common ancestor (the branching point closest to both of them) are most closely related.'},
+    {q:'What is an invasive species?',a:'A non-native species introduced to an ecosystem (intentionally or accidentally) that outcompetes native species, disrupts ecological balance, and often causes native species decline or extinction.'},
+    {q:'What are biotic vs. abiotic factors?',a:'Biotic = living components of the environment (predators, prey, competitors, parasites, mutualists). Abiotic = non-living components (temperature, rainfall, sunlight, soil type, pH).'},
+    {q:'What is the difference between density-dependent and density-independent limiting factors?',a:'Density-dependent: effects intensify as population density increases (predation, disease, competition for food). Density-independent: affect population regardless of size (natural disasters, extreme weather events).'},
+    {q:'What is exponential vs. logistic growth?',a:'Exponential: J-shaped curve, unlimited growth (unlimited resources, new environment). Logistic: S-shaped curve, growth slows as population approaches carrying capacity (K) — births eventually equal deaths.',svg:'popGrowth'},
+    {q:'What is carrying capacity (K)?',a:'The maximum population size that an environment can sustainably support given its limited resources (food, space, water). Population growth slows and levels off at K in logistic growth.'},
+    {q:'What are keystone species and trophic cascades?',a:'Keystone species have a disproportionately large effect on their ecosystem relative to their biomass (e.g., wolves, sea otters). Removing them causes a trophic cascade — a chain reaction of changes through the food web.'},
+    {q:'What is the difference between commensalism, mutualism, and parasitism?',a:'Mutualism: both species benefit (+/+). Commensalism: one benefits, the other is unaffected (+/0). Parasitism: one benefits, the other is harmed (+/-).'},
+    {q:'What is the difference between primary and secondary succession?',a:'Primary succession: begins on bare rock with no soil (e.g., after volcanic eruption). Pioneer species like lichens start soil formation. Secondary succession: begins after a disturbance where soil already exists (e.g., after wildfire or clear-cutting). Faster than primary.'},
+  ],
+  quiz:[
+    {q:'A small group of birds is blown to a remote island and starts a new population. Over generations, island birds develop traits very different from the mainland population. This scenario best illustrates:',opts:['Natural selection acting on the mainland population','The bottleneck effect from a disaster','The founder effect from a small colonizing group','Gene flow between island and mainland'],ans:2},
+    {q:'Deer mice live in a snowy habitat. White mice avoid predation better than brown mice. Over many generations, the population shifts toward more white mice. This is an example of:',opts:['Stabilizing selection','Disruptive selection','Directional selection','Sexual selection'],ans:2},
+    {q:'When wolves were reintroduced to Yellowstone, elk populations declined, riverbank vegetation recovered, and rivers stabilized. This chain of effects through the food web is called:',opts:['Founder effect from a new predator','Trophic cascade triggered by a keystone species','Primary succession in the ecosystem','Logistic growth of the wolf population'],ans:1},
+    {q:'A human arm, a whale flipper, and a bat wing all have the same underlying bone structure (humerus, radius, ulna) but very different functions. These are classified as:',opts:['Analogous structures — similar function, different origin','Vestigial structures — remnants of lost function','Homologous structures — evidence of shared ancestry','Convergent traits — same function, same origin'],ans:2},
+    {q:'A population of fish shows a bell curve of body size. Over time, medium-sized fish are most vulnerable to predators, and small and large fish survive better. Which type of natural selection is occurring?',opts:['Stabilizing selection — middle phenotype survives','Directional selection — one extreme is favored','Disruptive selection — both extremes are favored','Sexual selection — mate preference drives the change'],ans:2},
+    {q:'A population grows rapidly at first, then the rate of growth slows as it approaches the environment\'s carrying capacity, eventually leveling off. This describes:',opts:['Exponential growth (J-curve)','Boom-and-bust population cycling','Primary succession','Logistic growth (S-curve)'],ans:3},
+    {q:'A fungal disease kills 90% of a chestnut tree population. The surviving 10% have much lower genetic diversity than the original population. This event is an example of:',opts:['Founder effect from colonizing a new habitat','Directional selection toward disease resistance','Bottleneck effect — drastic reduction in population size','Hardy-Weinberg equilibrium being maintained'],ans:2},
+    {q:'Bees pollinate flowers and collect nectar. Both the bee and the flower benefit from this interaction. This relationship is classified as:',opts:['Parasitism — the flower is harmed by losing nectar','Commensalism — only the bee benefits','Mutualism — both species benefit from the interaction','Competition — both species compete for the same resource'],ans:2},
+  ]
+}
+];
+
+// ═══════════════════════════════════════════════════════════════
+// OVERVIEW CONTENT
+// ═══════════════════════════════════════════════════════════════
+const OVERVIEWS = {
+  cell: {
+    intro: `Every living thing grows, heals, and reproduces because cells divide. This topic covers the two types of cell division — <strong>mitosis</strong> and <strong>meiosis</strong> — and why getting division right (or terribly wrong) matters enormously for your health and survival.`,
+    conceptMap: [
+      ['Cell Cycle', 'Interphase (G1 → S → G2)', 'Mitotic Phase (Mitosis + Cytokinesis)'],
+      ['Mitosis', '2 identical diploid cells', 'growth & repair'],
+      ['Meiosis', '4 unique haploid gametes', 'sexual reproduction'],
+      ['Karyotypes', 'visual chromosome map', 'reveals trisomy, monosomy, sex'],
+      ['Nondisjunction', 'chromosomes fail to separate', 'trisomy or monosomy'],
+    ],
+    whatToKnow: [
+      `The <strong>cell cycle</strong> is the life of a cell. Most of that life is spent in <strong>interphase</strong> — growing, copying DNA, and preparing for division. Mitosis is the actual division of the nucleus, and it follows four phases in order: <strong>Prophase, Metaphase, Anaphase, Telophase</strong> (remember: PMAT). The result is two cells that are genetically identical to each other and to the parent cell.`,
+      `<strong>Meiosis</strong> is different in almost every way. It runs through two rounds of division and produces four cells that are each <strong>genetically unique</strong> and <strong>haploid</strong> (half the chromosome number of the parent). This is how sperm and eggs are made. <strong>Crossing over</strong> during Meiosis I is what shuffles the genetic deck — it's the main driver of genetic variation in sexually reproducing organisms.`,
+      `<strong>Karyotypes</strong> let scientists count and inspect chromosomes directly. A normal human has 46 chromosomes (23 pairs). <strong>Cancerous cells</strong> break the normal rules of the cell cycle by bypassing checkpoints and dividing without stopping — that's what makes them dangerous.`,
+    ],
+    watchOut: [
+      `Mitosis makes <strong>2 cells</strong>; meiosis makes <strong>4</strong>. They are completely different processes with different purposes and products — never mix them up.`,
+      `Daughter cells from mitosis are genetically <strong>IDENTICAL</strong> to the parent. Daughter cells from meiosis are <strong>NOT</strong> — each is unique. The exam loves to ask which is which.`,
+      `Homologous pairs separate in <strong>Meiosis I</strong>; sister chromatids separate in <strong>Meiosis II</strong>. This distinction comes up directly as a question — memorize it.`,
+    ],
+  },
+  genetics: {
+    intro: `Genetics explains why offspring resemble their parents — but not perfectly. This topic covers how traits are inherited, how to predict outcomes using Punnett squares, and why some inheritance patterns are more complicated than simple dominant/recessive.`,
+    conceptMap: [
+      ['Alleles', 'dominant vs. recessive', 'genotype → phenotype'],
+      ['Punnett Squares', 'predict offspring genotypes', 'monohybrid (2×2) or dihybrid (4×4)'],
+      ['Codominance', 'both alleles fully visible', 'e.g. roan cattle'],
+      ['Incomplete Dominance', 'blended phenotype', 'e.g. red + white = pink'],
+      ['Sex Chromosomes', 'XX (female) / XY (male)', 'X-linked traits, carriers'],
+      ['Pedigrees', 'track traits across generations', 'dominant / recessive / sex-linked'],
+      ['Polygenic Traits', 'many genes → one trait', 'bell-curve distribution'],
+    ],
+    whatToKnow: [
+      `Every trait is controlled by <strong>alleles</strong> — different versions of a gene. If you're <strong>heterozygous</strong> (one dominant, one recessive), only the dominant trait shows. <strong>Punnett squares</strong> let you calculate the exact probability of any offspring genotype. A monohybrid cross uses a 2×2 grid; a <strong>dihybrid cross</strong> uses a 4×4 grid with 16 boxes.`,
+      `Not everything follows simple Mendelian rules. In <strong>codominance</strong>, both alleles are fully expressed as separate patches (red AND white hairs in roan cattle). In <strong>incomplete dominance</strong>, they blend into a new intermediate phenotype (red + white → pink flowers). <strong>Sex-linked traits</strong> ride on the X chromosome, which is why males are more often affected — they only have one X, so one recessive allele is enough to express the trait.`,
+      `<strong>Pedigrees</strong> are family trees for traits. You need to read them and identify the inheritance pattern from the shading alone. <strong>Polygenic traits</strong> like height are controlled by many genes at once, which produces the familiar bell-curve spread of phenotypes across a population.`,
+    ],
+    watchOut: [
+      `<strong>Codominance</strong> and <strong>incomplete dominance</strong> are NOT the same thing. Codominance = both traits fully visible as distinct patches. Incomplete dominance = a blended intermediate. One classic exam trick is using them interchangeably — don't fall for it.`,
+      `<strong>Carriers are always female</strong> for X-linked recessive traits. Males can't be carriers — they either have the trait (one recessive X allele) or they don't. If a question describes a "carrier male," that's a red flag.`,
+      `A dihybrid cross uses a <strong>4×4 Punnett square</strong> (16 boxes), not a 2×2. The classic ratio of phenotypes is <strong>9:3:3:1</strong> — it's worth memorizing.`,
+    ],
+  },
+  dna: {
+    intro: `DNA is the instruction manual for every living thing. This topic traces how that information is stored, copied, and used to build proteins — and how modern science has learned to read and rewrite those instructions to fight disease, solve crimes, and engineer new organisms.`,
+    conceptMap: [
+      ['DNA', 'double helix', 'nucleotides (phosphate + sugar + base)'],
+      ['Base Pairing', 'A–T and G–C in DNA', 'A–U and G–C in RNA'],
+      ['Replication', 'semi-conservative', 'leading strand + Okazaki fragments'],
+      ['Transcription', 'DNA → mRNA', 'happens in the nucleus'],
+      ['Translation', 'mRNA → protein', 'ribosome + tRNA + codons'],
+      ['Mutations', 'substitution / insertion / deletion', 'frameshift vs. silent'],
+      ['Biotechnology', 'gel electrophoresis', 'recombinant DNA, CRISPR, cloning'],
+    ],
+    whatToKnow: [
+      `<strong>DNA</strong> is a double helix made of <strong>nucleotides</strong>. The bases pair in a strict lock-and-key pattern: <strong>A with T, G with C</strong> (in RNA: A pairs with U). When a cell divides, <strong>semi-conservative replication</strong> copies the entire genome — each new molecule keeps one original strand and builds one new strand alongside it.`,
+      `To actually use the information in DNA, the cell runs a two-step process. First, <strong>transcription</strong> copies a gene from DNA into <strong>mRNA</strong> inside the nucleus. Then, <strong>translation</strong> reads that mRNA at the ribosome — <strong>tRNA</strong> molecules act as adapters, matching their <strong>anticodon</strong> to each mRNA <strong>codon</strong> and delivering the right amino acid. The <strong>start codon is AUG</strong>; <strong>stop codons</strong> (UAA, UAG, UGA) end the chain.`,
+      `<strong>Mutations</strong> change the DNA sequence. Insertions and deletions are especially damaging because they cause <strong>frameshifts</strong> — every codon after the mutation is scrambled. Substitutions only change one codon and may be completely silent. Modern <strong>biotechnology</strong> — gel electrophoresis, recombinant DNA, and CRISPR — uses our deep understanding of DNA to solve real-world problems.`,
+    ],
+    watchOut: [
+      `Transcription happens in the <strong>NUCLEUS</strong>; translation happens at the <strong>RIBOSOME in the cytoplasm</strong>. These are two separate locations. A common wrong-answer trap puts translation in the nucleus.`,
+      `RNA uses <strong>uracil (U)</strong> instead of thymine (T). When you're asked to write a transcription sequence, swap every T for a U — and only in the mRNA, not in the DNA template.`,
+      `<strong>Frameshift mutations</strong> (insertions/deletions) cause far more damage than substitutions because they shift the reading frame for every codon downstream. A substitution might be silent; a frameshift almost never is.`,
+    ],
+  },
+  evo: {
+    intro: `Evolution explains how life on Earth has changed over billions of years, and ecology explains how living things interact with each other and their environment right now. These ideas connect deeply: ecology shapes which traits get selected for, and evolution shapes the ecosystems we see around us today.`,
+    conceptMap: [
+      ['Natural Selection', 'variation + heritability + differential survival', 'allele frequency change'],
+      ['Evidence for Evolution', 'fossils', 'homologous structures', 'molecular data', 'biogeography'],
+      ['Genetic Drift', 'random allele change', 'bottleneck effect / founder effect'],
+      ['Types of Selection', 'stabilizing / directional / disruptive / sexual'],
+      ['Cladograms', 'show branching order', 'most recent common ancestor = closest relatives'],
+      ['Population Growth', 'exponential (J-curve)', 'logistic (S-curve)', 'carrying capacity K'],
+      ['Species Interactions', 'mutualism (+/+)', 'commensalism (+/0)', 'parasitism (+/-)'],
+      ['Succession', 'primary (bare rock)', 'secondary (soil remains)'],
+    ],
+    whatToKnow: [
+      `Darwin's core idea: individuals with traits better suited to their environment survive and reproduce more. Over generations, those traits become more common — this is <strong>natural selection</strong>. <strong>Fitness</strong> means reproductive success, not physical strength. Crucially, <strong>individuals don't evolve</strong> — populations do, over many generations.`,
+      `Evolution is supported by four major lines of evidence. Darwin knew about fossils and anatomy — <strong>molecular/DNA evidence</strong> came much later (and he couldn't have known about it). <strong>Homologous structures</strong> share the same underlying anatomy from a common ancestor even if they serve different functions. <strong>Analogous structures</strong> look similar and do similar jobs but evolved independently — no shared ancestry, just similar evolutionary pressures.`,
+      `In ecology, populations grow exponentially (J-curve) when resources are unlimited, but level off at the <strong>carrying capacity (K)</strong> in <strong>logistic growth</strong> (S-curve). <strong>Biodiversity</strong> makes ecosystems more stable and resilient. Species interactions — <strong>mutualism, commensalism, and parasitism</strong> — show how tightly connected ecosystems are. <strong>Keystone species</strong> and <strong>trophic cascades</strong> illustrate how removing one species can unravel an entire food web. <strong>Succession</strong> shows how communities rebuild after disturbances.`,
+    ],
+    watchOut: [
+      `<strong>"Individuals evolve"</strong> is always wrong. Only populations evolve over generations. An individual organism cannot change its own alleles during its lifetime — that's adaptation, not evolution.`,
+      `<strong>Homologous vs. analogous structures</strong> is a classic exam trap. Homologous = same structure, different function, shared ancestry (human arm & whale flipper). Analogous = different structure, similar function, NO shared ancestry (bird wing & insect wing). They can look similar but mean opposite things for evolutionary history.`,
+      `Darwin would <strong>not</strong> have known about molecular/DNA evidence — it didn't exist in his time. If the exam asks which lines of evidence Darwin used, exclude anything involving genetics or DNA.`,
+    ],
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// REVIEW CONTENT (one entry per card, keyed topicId_cardIndex)
+// ═══════════════════════════════════════════════════════════════
+const REVIEWS = {
+// ── CELL REPRODUCTION ─────────────────────────────────────────
+cell_0:{
+  explanation:`The cell cycle is like a workday split into two main shifts. Most of the day is <strong>interphase</strong> — the cell is doing its regular job, growing bigger, and making a complete copy of all its DNA. Then there's a shorter, intense <strong>mitotic phase</strong> where it actually divides. The three parts of interphase are <strong>G1</strong> (just growing), <strong>S phase</strong> (copying all the DNA — S stands for synthesis), and <strong>G2</strong> (double-checking everything before division).`,
+  analogy:`Think of it like baking a cake to share. G1 = gather your ingredients. S phase = make a second copy of the recipe. G2 = make sure you have two of everything. Mitosis = actually split into two cakes.`,
+  tested:`The exam will ask where a cell spends most of its time (interphase, specifically G1) or ask you to put the phases in order. Don't confuse S phase with mitosis — DNA copying happens during <strong>interphase</strong>, not during mitosis itself.`
+},
+cell_1:{
+  explanation:`Interphase has three distinct stages. In <strong>G1</strong>, the cell grows larger and produces proteins it needs. In <strong>S phase</strong>, the cell replicates its entire DNA — every chromosome is duplicated. In <strong>G2</strong>, the cell continues growing and assembles the machinery needed for division. A cell in <strong>G0</strong> has exited the cycle entirely and is just doing its regular job (like most of your nerve cells).`,
+  analogy:`G1 = warming up before a race. S phase = making a photocopy of every document you own. G2 = packing your bag before a trip and checking you have everything.`,
+  tested:`Questions often describe a cell activity and ask which phase it's in. Key clues: DNA being copied = S phase. Cell just growing or preparing = G1 or G2. If asked what happens in S phase, the answer is always DNA replication.`
+},
+cell_2:{
+  explanation:`A cell spends the vast majority of its time in <strong>interphase</strong> — specifically in G1. Division (mitosis) is actually a very brief event in the life of a cell. This is why if you look at a tissue sample under a microscope, most cells appear to be in interphase, not dividing.`,
+  analogy:`Imagine a chef who spends 90% of their day prepping ingredients and only 10% actually cooking. The cooking (mitosis) is the dramatic part, but prep (interphase) is where most of the time goes.`,
+  tested:`This is a straightforward factual question but students often say "mitosis" because it seems like the main event. The correct answer is <strong>interphase</strong> (G1 specifically). Don't be fooled by the drama of cell division.`
+},
+cell_3:{
+  explanation:`Normal cells have built-in <strong>checkpoints</strong> — moments where the cell pauses and checks that everything is okay before proceeding. Cancerous cells have mutations that disable these checkpoints, so they skip the quality checks and divide over and over without stopping. They also stop responding to signals that normally tell a cell to stop dividing or self-destruct (apoptosis).`,
+  analogy:`Imagine a factory assembly line with quality control stops. A normal product gets checked at each station. A broken system that bypasses all the checks just keeps producing defective products indefinitely — that's a cancer cell.`,
+  tested:`Exam questions often describe a cell behaving abnormally and ask what went wrong. The answer almost always involves <strong>checkpoint failure</strong> or uncontrolled division. Also know: bypassing checkpoints → tumor formation.`
+},
+cell_4:{
+  explanation:`A <strong>karyotype</strong> is a photograph of all the chromosomes in a cell, sorted by size and shape into numbered pairs. It tells you three key things: the total number of chromosomes (46 in normal humans), whether any chromosomes are missing or duplicated (like trisomy 21 = three copies at position 21), and the organism's biological sex (look at pair 23 — XX or XY).`,
+  analogy:`Think of a karyotype like a sorted laundry pile. Each matching pair of socks is a homologous chromosome pair. Three socks of the same type means something went wrong. The last pair tells you the sex.`,
+  tested:`The exam may show a karyotype image and ask you to identify sex and/or chromosomal abnormalities. Always look at <strong>pair 23</strong> for sex (XX vs XY) and count at any unusual position for trisomy or monosomy.`,
+  svgKey:`karyotype`
+},
+cell_5:{
+  explanation:`Humans have 23 chromosome pairs. The 23rd pair are the <strong>sex chromosomes</strong>. If that pair is <strong>XX</strong>, the individual is biologically female. If it's <strong>XY</strong>, male. The Y chromosome is noticeably smaller than the X — easy to spot on a karyotype. <strong>Trisomy</strong> means three chromosomes at one position instead of two — trisomy 21 is the most well-known (three copies of chromosome 21 → Down syndrome).`,
+  analogy:`Pair 23 is like a name tag on the chromosome set. Two matching sizes = XX (female). One normal, one clearly smaller = XY (male). And if you see a trio at position 21, that's trisomy — three's a crowd.`,
+  tested:`A karyotype image will be shown and you'll need to identify sex and spot trisomy. If both chromosomes in pair 23 look the same size = XX. If one is visibly smaller = XY. Three chromosomes at the same numbered position = trisomy.`,
+  svgKey:`karyotype`
+},
+cell_6:{
+  explanation:`These are all related to DNA and cell division. <strong>Chromatin</strong> is DNA in its loose, unwound form (how it exists during interphase). A <strong>chromosome</strong> is the same DNA condensed into a tight, visible structure during mitosis. <strong>Sister chromatids</strong> are two identical copies of one chromosome connected at the <strong>centromere</strong> after replication — the centromere is the pinch point holding them together. The <strong>spindle</strong> is the network of protein fibers that pulls chromosomes to opposite ends of the cell.`,
+  analogy:`Chromatin is like a loose garden hose. A chromosome is that hose coiled up tightly. Sister chromatids are two identical hoses clipped together at the middle (the centromere). The spindle fibers are the hands that grab and pull them apart.`,
+  tested:`You'll be shown a diagram and asked to label these structures, or given a description and asked to name the term. The most common mix-up: <strong>centromere vs. chromatid</strong>. Centromere = the junction point. Chromatid = the whole arm of the chromosome.`
+},
+cell_7:{
+  explanation:`Mitosis has four phases. <strong>Prophase</strong>: chromosomes condense and become visible; spindle fibers form. <strong>Metaphase</strong>: chromosomes line up along the center (equator) of the cell — this is the easiest phase to spot. <strong>Anaphase</strong>: sister chromatids are pulled to opposite poles. <strong>Telophase</strong>: nuclear envelopes reform around each chromosome set; cell begins to pinch. Then <strong>cytokinesis</strong> finishes by splitting the cytoplasm.`,
+  analogy:`PMAT = "People Meet And Talk." Prophase = people arrive and get ready. Metaphase = everyone lines up in the middle of the room. Anaphase = they walk to opposite sides. Telophase = two separate conversations begin.`,
+  tested:`The exam will show a diagram of a cell in one phase and ask you to identify it. Key tells: chromosomes lined up in middle = <strong>Metaphase</strong>. Chromosomes visibly being pulled apart = <strong>Anaphase</strong>. Chromosomes condensed but scattered = Prophase.`,
+  svgKey:`mitosis`
+},
+cell_8:{
+  explanation:`Mitosis produces <strong>two daughter cells</strong> that are genetically identical to each other and to the original parent cell. They are <strong>diploid (2n)</strong> — they have the full chromosome number. This is essential for growth and tissue repair — when you replace cells after a cut, you want the new cells to be exactly like the originals.`,
+  analogy:`Mitosis is like a photocopier. You put in one page (the parent cell) and get two perfect, identical copies out. No information is added or lost.`,
+  tested:`The exam contrasts mitosis and meiosis products. Mitosis = <strong>2 identical diploid cells</strong>. Meiosis = 4 unique haploid cells. The word "identical" is key for mitosis — never use it to describe meiosis products.`
+},
+cell_9:{
+  explanation:`After mitosis, the cytoplasm must be physically divided. In <strong>animal cells</strong>, the cell membrane pinches inward like a drawstring bag being pulled tight — this groove is called the <strong>cleavage furrow</strong>. Plant cells can't pinch because they have a rigid cell wall, so instead they build a <strong>cell plate</strong> down the center, which grows outward and becomes the new wall separating the two daughter cells.`,
+  analogy:`Animal cell = splitting a water balloon by squeezing the middle. Plant cell = building a brick wall down the center of a room to divide it in two.`,
+  tested:`This is a classic compare/contrast question. Two key terms: <strong>cleavage furrow</strong> (animal) and <strong>cell plate</strong> (plant). Know which goes with which organism type — the exam will test this directly.`
+},
+cell_10:{
+  explanation:`Key vocab for meiosis: <strong>Diploid (2n)</strong> = two full chromosome sets (humans: 46). <strong>Haploid (n)</strong> = one set (human gametes: 23). A <strong>gamete</strong> is a sex cell — sperm or egg. A <strong>zygote</strong> is the diploid cell formed when sperm + egg fuse. <strong>Homologous pairs</strong> are two matching chromosomes (one from mom, one from dad, carrying the same genes). <strong>Crossing over</strong> is the exchange of DNA segments between homologs during Meiosis I, creating new allele combinations.`,
+  analogy:`Think of diploid as owning two copies of every book in a library. Haploid is donating one copy to a new library. When two haploid libraries (sperm + egg) merge at fertilization, the new zygote has a full diploid library again.`,
+  tested:`These terms appear in almost every meiosis question. Know <strong>diploid vs. haploid</strong> cold and what number each represents in humans (2n=46, n=23). Also know that homologous pairs carry the same genes but may carry different alleles.`
+},
+cell_11:{
+  explanation:`Meiosis produces <strong>four haploid (n) daughter cells</strong>. Because of crossing over and independent assortment, all four cells are <strong>genetically unique</strong> — none are identical to each other or to the parent cell. This genetic variation is the whole point of sexual reproduction: it generates diversity in offspring.`,
+  analogy:`If mitosis is a photocopier, meiosis is a remix board. You start with one song (parent cell), shuffle and recombine all the tracks, and end up with four completely unique remixes — none the same as the original.`,
+  tested:`Always contrast with mitosis (2 identical diploid cells). Meiosis = <strong>4 unique haploid cells</strong>. The exam especially tests the word "unique" — meiosis is the process that generates genetic diversity. If a question asks which process creates variation, the answer is meiosis.`
+},
+cell_12:{
+  explanation:`Meiosis occurs <strong>only in the reproductive organs (gonads)</strong>. In males, it happens in the <strong>testes</strong> and produces sperm. In females, it happens in the <strong>ovaries</strong> and produces eggs (ova). Every other cell division in the body — for growth, repair, or replacement — uses mitosis.`,
+  analogy:`The gonads are the only factories licensed to produce gametes. Every other factory in the body makes regular body cells via mitosis. Only the testes and ovaries get the meiosis production line.`,
+  tested:`A question might describe a process and ask where it occurs. If it involves <strong>gamete production</strong>, the answer is gonads (testes or ovaries). All other body cells divide by mitosis. This is a location question, not a process question.`
+},
+cell_13:{
+  explanation:`During <strong>Prophase I</strong> of meiosis, homologous chromosome pairs line up side-by-side and physically exchange segments of DNA — this is <strong>crossing over</strong>. The result is chromosomes that carry a mix of alleles from both the maternal and paternal chromosomes — a combination that has never existed before. Crossing over is a major source of genetic diversity in sexually reproducing organisms.`,
+  analogy:`Imagine two decks of cards — one red-backed, one blue-backed. Crossing over is like swapping a few cards between decks. Each deck now has a unique mix of red and blue cards. No two shuffles produce the same result.`,
+  tested:`The exam will ask when crossing over occurs (<strong>Prophase I</strong>), what it produces (new allele combinations), and why it matters (genetic diversity). Don't say "Prophase II" — crossing over is exclusively Meiosis I.`
+},
+cell_14:{
+  explanation:`<strong>Mitosis:</strong> 1 division → 2 identical diploid cells → used for growth and repair. <strong>Meiosis:</strong> 2 divisions (Meiosis I + II) → 4 unique haploid cells → used for sexual reproduction. Meiosis I is the "reduction division" where homologous pairs separate. Meiosis II resembles mitosis — sister chromatids separate. Crossing over only occurs in meiosis; mitosis has no crossing over.`,
+  analogy:`Mitosis is a clean photocopier — same in, same out. Meiosis is a photocopier that also shuffles pages, cuts the stack in half, then cuts each half again — four unique quarter-stacks emerge.`,
+  tested:`A comparison table is almost guaranteed on the exam. Memorize: divisions (1 vs 2), products (2 identical diploid vs 4 unique haploid), purpose (growth/repair vs reproduction), and whether cells are genetically identical (yes for mitosis, no for meiosis).`
+},
+cell_15:{
+  explanation:`No — gametes are <strong>haploid</strong>, meaning they have only ONE copy of each chromosome. Homologous pairs only exist in <strong>diploid</strong> cells. A gamete carries chromosome 1 (from either mom or dad), chromosome 2, and so on — just one copy each. When sperm and egg fuse during fertilization, the resulting zygote restores the homologous pairs by bringing together one set from each parent.`,
+  analogy:`If a full deck of 52 cards (26 pairs) represents a diploid body cell, a gamete is a half-deck of 26 unpaired cards. You can't have pairs when you only have one of each card. Fertilization reunites two half-decks into a full paired deck.`,
+  tested:`Questions may ask whether gametes have homologous pairs — the answer is <strong>no</strong>. They are haploid with no homologs. Homologous pairs only exist in diploid (2n) cells. The moment of fertilization is when homologous pairs are recreated.`
+},
+cell_16:{
+  explanation:`There are two key separation events in meiosis. In <strong>Meiosis I</strong>, the <strong>homologous chromosome pairs</strong> separate — each cell gets one chromosome from each pair, but both sister chromatids of that chromosome are still joined. In <strong>Meiosis II</strong>, the <strong>sister chromatids</strong> finally separate — this produces the final four haploid cells. Note: in mitosis, sister chromatids also separate — but in anaphase, not in a "Meiosis II."`,
+  analogy:`Meiosis I is like separating a pair of shoes into two piles (one shoe per pile). Meiosis II is like untying the two parts of each shoe. You started with pairs of pairs; you end with individual parts.`,
+  tested:`The exam specifically asks which separation happens in which division. <strong>Homologs separate in Meiosis I. Sister chromatids separate in Meiosis II.</strong> This is high-value because it's easy to mix up. Think: Meiosis I = the BIG separation (reduces ploidy). Meiosis II = the fine separation (like mitosis).`
+},
+cell_17:{
+  explanation:`<strong>Nondisjunction</strong> occurs when chromosomes fail to separate properly during meiosis (or mitosis). The result: gametes with an abnormal chromosome number — either one extra (<strong>n+1</strong>) or one missing (<strong>n−1</strong>). When these gametes are fertilized, the zygote has <strong>trisomy</strong> (2n+1, like Down syndrome from three copies of chromosome 21) or <strong>monosomy</strong> (2n−1). Nondisjunction can happen in Meiosis I (homologs don't separate) or Meiosis II (sister chromatids don't separate).`,
+  analogy:`Imagine sorting a deck of cards into two equal piles and accidentally putting two aces into one pile instead of splitting them. That pile now has too many aces — that imbalance is nondisjunction.`,
+  tested:`The exam asks what nondisjunction is, when it can occur (Meiosis I or II), and what the downstream consequences are. <strong>Down syndrome (trisomy 21)</strong> is the go-to example. Know that nondisjunction during Meiosis I affects more chromosomes than nondisjunction during Meiosis II.`
+},
+
+// ── GENETICS ──────────────────────────────────────────────────
+genetics_0:{
+  explanation:`Every gene in your body exists as two copies called <strong>alleles</strong> — one inherited from each parent. If both alleles are the same (BB or bb), you are <strong>homozygous</strong> for that gene. If they're different (Bb), you are <strong>heterozygous</strong>. A <strong>dominant</strong> allele (capital letter) is expressed whenever it's present — even one copy is enough. A <strong>recessive</strong> allele (lowercase) is only expressed when there is no dominant allele present — you need two copies (bb) to show the recessive trait.`,
+  analogy:`Think of alleles like volume settings. Dominant is a loudspeaker — it drowns everything out. Recessive is a whisper — it only gets heard when there's absolutely no loudspeaker in the room.`,
+  tested:`If a person shows a recessive trait (like blue eyes if recessive), they must be <strong>homozygous recessive (bb)</strong>. This logic underpins every Punnett square. Heterozygous individuals (Bb) show the dominant trait even though they carry the recessive allele.`
+},
+genetics_1:{
+  explanation:`A <strong>dominant</strong> allele is expressed whenever it is present — even just one copy. A <strong>recessive</strong> allele is only expressed when there are two copies (homozygous recessive). You write dominant with a capital letter (B) and recessive with lowercase (b). The <strong>genotype</strong> is the actual allele combination (Bb). The <strong>phenotype</strong> is the observable trait that results. A heterozygous individual (Bb) has a dominant phenotype but carries the recessive allele hidden.`,
+  analogy:`Think of dominant as coffee flavor and recessive as water. Mix coffee and water — you taste the coffee. You only taste the water when there's no coffee at all. The recessive flavor only comes through when dominant is absent.`,
+  tested:`If someone shows a recessive trait, their genotype must be <strong>lowercase/lowercase (bb)</strong> — no exceptions. If a parent with a dominant phenotype has a recessive child, the parent must be heterozygous (Bb). These deductions are tested constantly on Punnett square problems.`
+},
+genetics_2:{
+  explanation:`Mendel worked across multiple generations of pea plants. The <strong>P generation</strong> is the original pure-breeding parents. The <strong>F1 generation</strong> (first filial) is their offspring — all identical if both P parents are homozygous. The <strong>F2 generation</strong> comes from crossing two F1 individuals. Mendel observed that recessive traits disappeared in F1 but reappeared in roughly 1 out of 4 F2 offspring — this revealed the 3:1 dominant:recessive ratio and the existence of hidden (recessive) alleles.`,
+  analogy:`P = your grandparents. F1 = your parents. F2 = you and your siblings. A trait that Grandpa had (but neither parent showed) can suddenly reappear in a grandchild. Mendel explained why.`,
+  tested:`Exam questions may describe a cross involving F1 or F2 and ask what ratio of offspring to expect, or ask which generation shows the classic <strong>3:1 ratio</strong> (F2 from two heterozygous F1 parents). Know that F1 offspring of two pure-breeding parents are all heterozygous.`
+},
+genetics_3:{
+  explanation:`A <strong>dihybrid cross</strong> tracks two traits simultaneously. You need a <strong>4×4 Punnett square</strong> (16 boxes) to work it out. When both parents are heterozygous for both traits (AaBb × AaBb), the expected phenotype ratio of offspring is <strong>9:3:3:1</strong> — 9 with both dominant traits expressed, 3 with one dominant + one recessive, 3 with the other dominant + one recessive, and 1 with both recessive. This ratio only works if the two genes are on different chromosomes (unlinked).`,
+  analogy:`Think of a dihybrid cross like flipping two separate coins at once. The result of coin 1 (trait A) has absolutely nothing to do with the result of coin 2 (trait B). Each coin flip is independent.`,
+  tested:`You'll need to either set up a 4×4 Punnett square or recognize the <strong>9:3:3:1 ratio</strong>. The exam sometimes asks what fraction of offspring will show a specific combination — e.g., "what fraction will be recessive for both traits?" (answer: 1/16).`
+},
+genetics_4:{
+  explanation:`Mendel's <strong>Law of Independent Assortment</strong> states that alleles for different traits are sorted into gametes independently of each other — as long as those genes are on different chromosomes. This happens because homologous chromosomes line up randomly during Meiosis I. It's why a child doesn't always inherit the same parent's traits together (e.g., having Dad's eye color doesn't predict whose nose they have).`,
+  analogy:`Imagine two bags — one with cards labeled "A" or "a," another with "B" or "b." You randomly draw one card from each bag. What you draw from bag 1 has nothing to do with what you draw from bag 2. The draws are completely independent.`,
+  tested:`Questions may describe two traits and ask if they assort independently. If the genes are on <strong>different chromosomes</strong>, yes — they follow independent assortment. Genes on the <strong>same chromosome</strong> are linked and do not follow this law (they tend to be inherited together).`
+},
+genetics_5:{
+  explanation:`Mendel's <strong>Law of Segregation</strong> states that every organism has two alleles for each trait, and during gamete formation these alleles <strong>separate (segregate)</strong> so each gamete gets exactly one. This happens because homologous chromosomes separate during Meiosis I. This is why you inherit exactly one allele from each parent, not both — each parent's gamete contributed only one copy.`,
+  analogy:`Imagine you have two lottery balls — one red, one blue. When you form a gamete, you can only put ONE ball in the envelope. Each gamete gets one, and the other goes to a different gamete. Both parents do this, and fertilization brings two single-allele gametes together.`,
+  tested:`Questions may ask which law explains why gametes are haploid for each gene, or why offspring receive one allele from each parent. The answer is the <strong>Law of Segregation</strong>. Distinguish it from Independent Assortment, which is about different genes, not the same gene.`
+},
+genetics_6:{
+  explanation:`In standard dominance, one allele fully masks the other. In <strong>codominance</strong>, both alleles are fully expressed simultaneously — both traits appear as distinct patches side by side (roan cattle have individual <em>red</em> hairs AND <em>white</em> hairs — not pink hairs). In <strong>incomplete dominance</strong>, neither allele fully dominates and the result is a <em>blended</em> intermediate phenotype (red + white flowers → pink flowers — no red or white, just a new pink). The key question: can you see both original traits separately, or is there a new blended trait?`,
+  analogy:`Codominance = tie-dye: you can see both original colors clearly and separately. Incomplete dominance = mixing red and white paint: you get pink, and the original colors are no longer visible.`,
+  tested:`This is one of the most tested non-Mendelian patterns. Look for keywords: <strong>"patches," "spots," or "both visible"</strong> = codominance. <strong>"Blend," "intermediate," or "in-between"</strong> = incomplete dominance. The trap is treating them as interchangeable — they are fundamentally different outcomes.`
+},
+genetics_7:{
+  explanation:`Humans have 23 chromosome pairs. The 23rd pair are the <strong>sex chromosomes</strong>. Females have two X chromosomes (<strong>XX</strong>) — roughly the same size. Males have one X and one Y chromosome (<strong>XY</strong>) — the Y is significantly shorter than the X. This genetic difference triggers sex determination during embryonic development. The Y chromosome contains the <strong>SRY gene</strong>, which initiates male development.`,
+  analogy:`Think of the 23rd pair as a matching game. Two matching chromosomes of similar size = XX (female). One normal size + one noticeably smaller = XY (male). The size difference is the visual key on a karyotype.`,
+  tested:`Know XX = female, XY = male. Also know that <strong>fathers determine the sex</strong> of offspring — eggs always carry X; sperm carry either X or Y. An X-carrying sperm + egg = daughter (XX). A Y-carrying sperm + egg = son (XY).`
+},
+genetics_8:{
+  explanation:`<strong>Sex-linked traits</strong> are controlled by genes on the sex chromosomes — almost always the <strong>X chromosome</strong> (very few functional genes are on the Y). Because females have two X chromosomes, a recessive sex-linked allele on one X can be masked by the dominant allele on the other X — she won't show the trait. Because males only have one X, any allele on that X is expressed — there's no backup. This is why males are far more frequently affected by X-linked recessive disorders like colorblindness and hemophilia.`,
+  analogy:`The X chromosome is like a two-sided coin — females have two coins (one side can hide a flaw). The Y chromosome is like a one-sided coin — males have one double-sided and one single-sided. If the double-sided coin has a flaw on both sides, there's no backup.`,
+  tested:`Know which traits are X-linked (colorblindness, hemophilia, Duchenne muscular dystrophy). Questions often ask why males are more affected: they only have <strong>one X copy</strong>, so one recessive allele is enough to express the trait.`
+},
+genetics_9:{
+  explanation:`A <strong>carrier</strong> is a person who has one copy of a recessive disease allele on one X chromosome but has a normal dominant allele on the other X — so they don't have the disease, but they can pass it on. <strong>Only females can be carriers</strong> for X-linked recessive traits, because they have two X chromosomes. Males only have one X — if they carry the recessive allele, they express the disease immediately. There is no "silent carrier" status for males with X-linked traits.`,
+  analogy:`A female carrier is like having a spare tire: one good tire (dominant allele) does the job, and the bad spare (recessive allele) is hidden in the trunk. A male only has one tire — if it's bad, he's stranded immediately. No spare.`,
+  tested:`If a question describes a "male carrier," that's a red flag — it's wrong for X-linked recessive traits. Carrier mothers have a <strong>50% chance</strong> of passing the allele to sons (who will be affected) and daughters (who will be carriers). Carrier status is exclusive to females for X-linked traits.`
+},
+genetics_10:{
+  explanation:`Males only have one X chromosome, so <strong>any allele on that X is automatically expressed</strong> — dominant or recessive. For an X-linked recessive trait like colorblindness, a male needs only one copy of the recessive allele (on his single X) to be affected. A female needs two copies — one on each X — to be affected. Since one copy is much more likely than two, males are statistically much more often affected.`,
+  analogy:`Imagine a raffle where males have one ticket and females have two. A male with a "bad" ticket loses immediately. A female needs two bad tickets before she loses. Males are far more likely to "lose" on any single X-linked recessive trait.`,
+  tested:`Questions ask why X-linked recessive traits appear more in males. The answer: males have <strong>one X</strong>, so one recessive allele is sufficient to express the trait. Females need <strong>two recessive alleles</strong> (one on each X) to show the trait.`
+},
+genetics_11:{
+  explanation:`<strong>Polygenic traits</strong> are controlled by two or more genes working together. Each gene adds a small additive contribution to the phenotype. Because many different allele combinations are possible, the result is a <strong>continuous range</strong> of phenotypes in the population — displayed as a bell curve. Human height, skin color, and eye color are all polygenic. This explains why children can look significantly different from both parents and from each other.`,
+  analogy:`Think of polygenic traits like building a Lego tower. Each gene adds one block. Each person gets a different random assortment of blocks — everyone ends up at a slightly different height with no clear discrete categories.`,
+  tested:`If a question describes a <strong>bell-curve distribution</strong> of phenotypes, it's almost always a polygenic trait. This contrasts with simple Mendelian traits that show discrete categories (like wrinkled vs. smooth). Know that the more genes involved, the more continuous and bell-shaped the distribution.`
+},
+genetics_12:{
+  explanation:`Pedigrees use a standardized visual language. <strong>Circles</strong> = females. <strong>Squares</strong> = males. <strong>Filled (shaded) shape</strong> = affected individual. <strong>Half-filled</strong> = carrier. <strong>Horizontal line</strong> = mated pair. <strong>Vertical line</strong> = offspring. Roman numerals label generations (I, II, III…). Numbers within a generation label individuals (II-3 = the third person in generation II). To identify a carrier, look for an unaffected individual who has an affected child or parent.`,
+  analogy:`A pedigree is like a coded family photo album where shapes replace faces, and shading tells you who has the trait. Reading it is like cracking a simple visual code.`,
+  tested:`You'll be shown a pedigree and asked to identify affected individuals, carriers, and inheritance pattern. Practice working backward: if a child is affected (aa) and parents are unaffected, those parents <strong>must both be carriers (Aa)</strong>. That logic is the most-tested pedigree skill.`
+},
+genetics_13:{
+  explanation:`An <strong>autosomal dominant</strong> trait appears in <strong>every generation</strong> of a pedigree — it cannot skip. Every affected individual has at least one affected parent (because you need only one allele copy to express it). Males and females are equally affected. If two affected parents have an unaffected child, at least one parent must be <strong>heterozygous (Aa)</strong>, not homozygous dominant (AA).`,
+  analogy:`Autosomal dominant is like a loud personality trait in a family — everywhere you look across generations, someone is loud. And loud people always have at least one loud parent.`,
+  tested:`Look for "trait in every generation" and "affected individuals always have an affected parent." The trap: assuming dominant means everyone gets it — heterozygous dominant parents (Aa) can have unaffected (aa) children. Also: <strong>males and females equally affected</strong> distinguishes autosomal from sex-linked.`
+},
+genetics_14:{
+  explanation:`An <strong>autosomal recessive</strong> trait can <strong>skip generations</strong> — it can hide in carriers who don't show the trait. The telltale pattern: two unaffected parents (both carriers, Aa) have an affected child (aa). Males and females are equally affected. When you see a trait skip a generation or two unaffected parents producing an affected child, autosomal recessive is the first hypothesis.`,
+  analogy:`Recessive inheritance is like a secret that skips generations — grandparents carried it silently, parents carried it silently, and then it surfaced in the grandchild. The secret was there the whole time, just hidden.`,
+  tested:`Look for: trait skips a generation, OR two unaffected parents with an affected child. The classic question: "What are the most likely genotypes of these parents?" If their child is affected (aa), both parents must be <strong>Aa</strong> (carriers). Males and females equally affected = autosomal (not sex-linked).`
+},
+genetics_15:{
+  explanation:`<strong>Sex-linked recessive</strong> traits predominantly affect males. The classic pedigree pattern: many affected males with unaffected (carrier) mothers. An <strong>affected father cannot pass the trait to his sons</strong> — he gives sons the Y chromosome, not the X. So if you see the trait pass from grandfather to grandson through an unaffected mother, that's the X-linked recessive signature. Affected daughters are rare (they need two recessive X alleles) and only occur if the father is affected AND the mother is a carrier.`,
+  analogy:`X-linked recessive is like a hidden message encoded in the X chromosome. The grandmother (or mother) quietly carries the message without "broadcasting" it, then passes it to sons who broadcast it openly.`,
+  tested:`Look for: mostly males affected, carrier mothers, trait skips from grandfather to grandson. The biggest trap: thinking an affected father passes it to sons — <strong>he doesn't</strong>. He passes Y to sons and X to daughters. The X (with the recessive allele) goes to daughters only, making them carriers.`
+},
+
+// ── DNA, PROTEIN SYNTHESIS & BIOTECH ─────────────────────────
+dna_0:{
+  explanation:`Every <strong>nucleotide</strong> is built from three components: a <strong>phosphate group</strong> (forms the backbone), a <strong>5-carbon sugar</strong> (deoxyribose in DNA, ribose in RNA), and a <strong>nitrogenous base</strong> (A, T, G, or C in DNA; A, U, G, or C in RNA). The sugar and phosphate are always the same within a given nucleic acid — it's the base that varies and carries the genetic information. Nucleotides are strung together with phosphodiester bonds to form the long chains of DNA or RNA.`,
+  analogy:`A nucleotide is like a train car. The phosphate is the coupling hook, the sugar is the chassis, and the base is the cargo. All cars have the same chassis and coupling — only the cargo (the base) differs, and that's what carries the message.`,
+  tested:`Know the three components and what differs between DNA and RNA nucleotides. The exam may ask what sugar is in DNA (deoxyribose) vs. RNA (ribose), or which bases are in each. Also know that the base is the "information-carrying" component.`
+},
+dna_1:{
+  explanation:`In DNA, <strong>adenine (A) pairs with thymine (T)</strong> and <strong>guanine (G) pairs with cytosine (C)</strong>. These pairings aren't random — A-T form 2 hydrogen bonds; G-C form 3 (making GC-rich DNA more stable). In RNA, there is no thymine — <strong>uracil (U) replaces T</strong>, so A pairs with U. These rules make the two strands of DNA complementary: knowing one strand lets you immediately figure out the other.`,
+  analogy:`Base pairing is a strict lock-and-key system. A only fits T (or U in RNA). G only fits C. Trying to pair A with G is like trying to fit the wrong key in a lock — it doesn't work no matter how hard you try.`,
+  tested:`You'll be given a DNA or mRNA sequence and asked to write the complementary strand. Key rule to remember: when going DNA → RNA, every <strong>T becomes U</strong> in the mRNA. The most common mistake is forgetting to swap T for U during transcription questions.`
+},
+dna_2:{
+  explanation:`When DNA replicates, the double helix unwinds and each original strand serves as a <strong>template</strong> for a new complementary strand. The result: each new DNA molecule has <strong>one original (parental) strand and one newly synthesized strand</strong>. This "half-and-half" strategy is called <strong>semi-conservative replication</strong>. The Meselson-Stahl experiment (1958) confirmed this model using heavy nitrogen isotopes to track which strands were old vs. new.`,
+  analogy:`Unzip a zipper down the middle. Each half becomes the template for a new matching half. You end up with two full zippers, each containing one original side and one new side.`,
+  tested:`The exam may describe a replication model and ask which type it is. Semi-conservative = one old strand + one new strand per molecule. Don't confuse with conservative (both old strands stay together in one molecule) or dispersive (old and new randomly mixed throughout). Semi-conservative is the correct model.`
+},
+dna_3:{
+  explanation:`DNA polymerase can only build a new strand in the <strong>5'→3' direction</strong>. On the <strong>leading strand</strong>, this direction happens to run toward the replication fork — so the strand is built continuously. On the <strong>lagging strand</strong>, the template runs in the wrong direction, so the strand must be built in short pieces that run <em>away</em> from the fork — these are <strong>Okazaki fragments</strong>. DNA ligase later stitches them into one continuous strand.`,
+  analogy:`The leading strand is painting a fence in one long stroke left to right. The lagging strand is making short strokes from right to left, lifting the brush each time, then connecting all the strokes at the end.`,
+  tested:`Know what Okazaki fragments are and why they form (lagging strand direction). The exam may ask which strand has Okazaki fragments (<strong>lagging strand</strong>) or what enzyme joins them (<strong>DNA ligase</strong>). Don't say leading strand.`,
+  svgKey:`replication`
+},
+dna_4:{
+  explanation:`The <strong>leading strand</strong> is synthesized <strong>continuously</strong> toward the replication fork because its template runs 3'→5', which matches the 5'→3' direction that DNA polymerase requires. The <strong>lagging strand</strong> template runs in the opposite direction (5'→3'), so it must be built in short <strong>Okazaki fragments</strong> that each move away from the fork. Both strands use the same DNA polymerase, but the lagging strand requires additional steps: primase (to lay RNA primers), polymerase (to extend), and ligase (to join fragments).`,
+  analogy:`Two lanes of traffic at a construction zone. The leading lane flows straight through without stopping. The lagging lane has to back up repeatedly and re-enter — more complicated process, same destination.`,
+  tested:`Know which strand is continuous (<strong>leading</strong>) vs. fragmented (<strong>lagging</strong>). A diagram question may show the replication fork and ask you to identify leading vs. lagging. The key is the direction of synthesis relative to fork movement.`,
+  svgKey:`replication`
+},
+dna_5:{
+  explanation:`DNA and RNA differ in three key ways. <strong>Sugar</strong>: DNA uses deoxyribose; RNA uses ribose (one fewer oxygen). <strong>Bases</strong>: DNA contains thymine (T); RNA contains uracil (U) instead. <strong>Strands</strong>: DNA is double-stranded (double helix); RNA is single-stranded. DNA stores genetic information long-term in the nucleus. RNA carries working copies of that information to the ribosome.`,
+  analogy:`DNA is the original master blueprint locked in the vault (nucleus). RNA is the photocopy you bring to the job site (ribosome). The photocopy has a slightly different format — single page, slightly different notation (uracil instead of thymine) — but carries the same information.`,
+  tested:`A comparison table is nearly guaranteed on exams. Know all three differences. The most commonly missed: RNA uses <strong>uracil, not thymine</strong>. Single-stranded RNA vs. double-stranded DNA is also frequently tested.`
+},
+dna_6:{
+  explanation:`<strong>Transcription</strong> copies the information from a gene into a messenger RNA (mRNA) molecule. It happens in the <strong>nucleus</strong>. <strong>RNA polymerase</strong> binds to the promoter region, unwinds the DNA, and reads the template strand (3'→5') to build a complementary mRNA strand (5'→3'). The mRNA sequence matches the coding strand of DNA, except T is replaced by U. When complete, the mRNA exits through nuclear pores and travels to a ribosome in the cytoplasm.`,
+  analogy:`Transcription is like taking notes from a textbook (DNA) into your notebook (mRNA). You rewrite the key information in a portable format so you can take it with you to where the work happens.`,
+  tested:`Know the location (nucleus), the enzyme (RNA polymerase), the product (mRNA), and the direction of information flow (DNA → mRNA). The biggest confusion: mixing up transcription (DNA→mRNA) with translation (mRNA→protein). Location is a key differentiator — transcription is nuclear.`
+},
+dna_7:{
+  explanation:`<strong>Translation</strong> is the process of reading the mRNA sequence at a <strong>ribosome</strong> to build a protein. The ribosome moves along mRNA three bases at a time — each three-base unit is a <strong>codon</strong>. Transfer RNA (<strong>tRNA</strong>) molecules each carry one specific amino acid and have a three-base <strong>anticodon</strong> that matches a codon. When an anticodon matches its codon, the amino acid is added to the growing <strong>polypeptide chain</strong>. Translation ends when the ribosome reaches a stop codon.`,
+  analogy:`Translation is like following a recipe. The mRNA is the recipe. The ribosome is the chef. tRNA molecules are delivery drivers bringing the exact right ingredients (amino acids) one at a time, matching their delivery code (anticodon) to the recipe's ingredient code (codon). The finished dish is the protein.`,
+  tested:`Know where translation happens (ribosome in <strong>cytoplasm</strong>), what reads the codons (tRNA via anticodon), and the flow of information (mRNA → protein). Don't put translation in the nucleus. The exam may also ask about the start codon (AUG) and stop codons (UAA, UAG, UGA).`,
+  svgKey:`translation`
+},
+dna_8:{
+  explanation:`A <strong>codon</strong> is a three-base sequence on mRNA that codes for one specific amino acid (or a start/stop signal). There are 64 possible codons (4³) but only 20 amino acids — so most amino acids are coded by multiple codons (the genetic code is <strong>redundant</strong>). An <strong>anticodon</strong> is the complementary three-base sequence on tRNA. The tRNA's anticodon base-pairs with the mRNA codon, ensuring the correct amino acid is delivered to the growing chain.`,
+  analogy:`A codon is like a hotel room number. The anticodon is the matching key card. Only the exact matching key (anticodon) opens that room number (codon) to deliver the right guest (amino acid).`,
+  tested:`Know codon (on mRNA) vs. anticodon (on tRNA). If given a codon, write the anticodon as the complementary bases. Remember: <strong>AUG is the universal start codon</strong> (codes for methionine). The exam may give an mRNA sequence and ask you to determine the anticodon of the tRNA that would bind to the third codon, etc.`
+},
+dna_9:{
+  explanation:`<strong>AUG</strong> is the <strong>start codon</strong> — every protein's translation begins here, and AUG always codes for the amino acid <strong>methionine</strong>. Every ribosome begins translation at AUG; every protein starts with methionine (sometimes removed after). There are three <strong>stop codons</strong>: <strong>UAA, UAG, and UGA</strong>. These don't code for any amino acid — they signal the ribosome to detach and release the completed polypeptide. No tRNA has an anticodon for stop codons.`,
+  analogy:`AUG is the green traffic light — translation starts moving. UAA, UAG, and UGA are the red lights — everything stops and the protein is released. There are three red lights but only one green.`,
+  tested:`Know AUG = start = methionine. Know the three stop codons (UAA, UAG, UGA). The exam may give you an mRNA sequence and ask where translation begins (first AUG) or ends (first stop codon). Also: a nonsense mutation is one that changes a codon into a stop codon prematurely, ending the protein early.`
+},
+dna_10:{
+  explanation:`There are three types of point mutations. <strong>Substitution</strong>: one base is swapped for another — affects only one codon and may be silent, missense, or nonsense. <strong>Insertion</strong>: one or more bases are added — shifts the reading frame for everything downstream. <strong>Deletion</strong>: one or more bases are removed — also shifts the reading frame. Insertions and deletions are generally more damaging because they cause frameshifts, while substitutions affect only a single codon.`,
+  analogy:`Think of DNA as a sentence where every word is exactly 3 letters: "THE CAT ATE THE RAT." Substitution = change one letter of one word. Insertion = add a letter somewhere. Deletion = remove a letter. Adding or removing breaks every three-letter word after it — that's the frameshift effect.`,
+  tested:`Know all three types and what distinguishes them. The key exam distinction: <strong>substitutions affect one codon</strong>; <strong>insertions and deletions cause frameshifts</strong> that affect everything downstream. If a question asks which mutation causes the most damage, the answer is insertion or deletion (frameshift).`
+},
+dna_11:{
+  explanation:`When one or two bases are inserted or deleted, the reading frame is shifted. Since the ribosome reads in triplets (codons), shifting the frame by one position scrambles every single codon after the mutation point — producing an entirely different (usually nonfunctional or truncated) protein. Notably, inserting or deleting exactly <strong>three bases</strong> does NOT cause a frameshift — it adds or removes exactly one amino acid without disrupting the rest of the sequence.`,
+  analogy:`Back to the sentence: "THE CAT ATE THE RAT." Insert the letter X after position 3: "THE XCA TAT ETH ERA T..." — every word is now gibberish. Delete one letter: same chaos. But delete exactly 3 letters (one word): "THE ATE THE RAT" — the sentence still mostly makes sense, just shorter.`,
+  tested:`Know why frameshifts are more damaging than substitutions (they scramble the entire downstream sequence). Also know: adding/deleting 3 bases = no frameshift, just adds/removes one amino acid. This is a <strong>classic trick question</strong> on exams.`
+},
+dna_12:{
+  explanation:`The genetic code is <strong>redundant (degenerate)</strong> — multiple different codons can code for the same amino acid. For example, UUU and UUC both code for phenylalanine. A <strong>silent mutation</strong> is a substitution that changes the codon but the new codon codes for the <em>same</em> amino acid — so the protein is unchanged. The DNA changed, but there's no effect on the organism's phenotype. This is why the genetic code's redundancy acts as a built-in buffer against certain mutations.`,
+  analogy:`If a recipe says "add 2 cups of flour" and someone changes it to "add dos cups de harina," the flour amount is the same — the wording changed, but the outcome didn't. Silent mutation works the same way.`,
+  tested:`If asked why a mutation has no effect on the protein, the answer is the <strong>redundancy of the genetic code</strong> — silent mutation. Don't confuse this with "no mutation occurred" — the DNA <em>did</em> change. A silent mutation is still a mutation; it just happens to code for the same amino acid.`
+},
+dna_13:{
+  explanation:`<strong>Gel electrophoresis</strong> separates DNA fragments by size using electricity. DNA has a negative charge (from its phosphate backbone), so it migrates toward the <strong>positive electrode</strong>. Smaller fragments move more easily through the gel and travel <strong>farther</strong> from the starting wells. Larger fragments are slower and stay <strong>closer to the wells</strong>. After running, UV light reveals the banding pattern, which can be compared across samples for identification or diagnosis.`,
+  analogy:`Gel electrophoresis is like a race where smaller, lighter runners are faster. All runners start at the same starting line (the well). After a set time, the short fast runners (small DNA) have covered more ground than the large slow ones (big DNA).`,
+  tested:`Know which fragments travel farther (<strong>smaller fragments</strong>) vs. stay near the top (<strong>larger fragments</strong>). The exam may show a gel image and ask you to compare samples or rank fragments by size. Wells are always at the top; smallest fragments are at the bottom.`
+},
+dna_14:{
+  explanation:`A <strong>DNA fingerprint</strong> is a unique pattern of DNA bands produced by gel electrophoresis, specific to each individual (except identical twins). Scientists cut DNA at specific highly variable repeated sequences using restriction enzymes, then run fragments through a gel. The pattern of bands is like a bar code — unique and consistent for each person throughout their lifetime. Used in forensics (matching crime scene DNA), paternity testing, and identifying human remains.`,
+  analogy:`A DNA fingerprint is like a barcode for a person. Every individual has a unique barcode that never changes, and scanning it always identifies the same person.`,
+  tested:`Know what a DNA fingerprint is and its applications (forensics, paternity testing). The exam may show a gel with samples from a crime scene, suspects, and victim, and ask you to match them. The matching sample has the same <strong>band pattern at the same positions</strong>.`
+},
+dna_15:{
+  explanation:`<strong>Recombinant DNA</strong> is DNA created by cutting and joining DNA from two different organisms or sources. The process uses <strong>restriction enzymes</strong> to cut DNA at specific sequences (leaving "sticky ends"), then <strong>DNA ligase</strong> to paste the pieces together. This lets scientists insert useful genes (like the human insulin gene) into bacterial plasmids. The bacteria then express the human gene and produce the protein at large scale — this is how most medical insulin is manufactured today.`,
+  analogy:`Recombinant DNA is like cutting a quote from one book and pasting it into another. The new book now contains text from two different original sources — that's what "recombinant" means.`,
+  tested:`Know that recombinant DNA combines DNA from two sources, uses restriction enzymes to cut, and DNA ligase to join. The classic application: inserting the <strong>human insulin gene into bacteria</strong>. Also know the concept of a plasmid — the circular bacterial DNA used as the "vehicle" to carry the foreign gene.`
+},
+dna_16:{
+  explanation:`<strong>CRISPR-Cas9</strong> is a gene-editing system that acts like molecular scissors. A <strong>guide RNA</strong> (gRNA) is designed to match the target DNA sequence, directing the <strong>Cas9 protein</strong> to that exact location where it makes a precise cut. Scientists can then disable a gene, correct a mutation, or insert a new sequence. CRISPR is faster, cheaper, and more precise than all previous gene-editing technologies. Applications include cancer research, treating genetic diseases, developing disease-resistant crops, and basic biological research.`,
+  analogy:`CRISPR is like the "Find and Replace" function in a word processor — but for DNA. You specify exactly what sequence to find, and it goes there and makes the edit you specify, leaving everything else unchanged.`,
+  tested:`Know what CRISPR does (precisely cuts and edits DNA at a specific sequence), the two key components (guide RNA + Cas9 protein), and what it's used for (disease research, genetic therapy, agriculture). You may be asked what distinguishes CRISPR from older methods: its <strong>precision, simplicity, and low cost</strong>.`
+},
+dna_17:{
+  explanation:`<strong>Clones</strong> are genetically identical copies of an organism. Natural cloning occurs with identical twins. Artificial cloning is done via <strong>somatic cell nuclear transfer (SCNT)</strong>: the nucleus is removed from an egg cell, and a nucleus from a donor somatic (body) cell is inserted. The egg is stimulated to develop into an embryo that is genetically identical to the donor. This technique produced <strong>Dolly the sheep</strong> in 1996 — the first mammal cloned from an adult cell.`,
+  analogy:`Making a clone via nuclear transfer is like swapping the hard drive in a laptop. The new computer (the egg) has the original operating system (donor DNA) installed. It will run all the same programs as the original.`,
+  tested:`Know that clones have the same <strong>nuclear DNA</strong> as the donor (slight mitochondrial DNA differences from the egg donor exist). Know the technique name (somatic cell nuclear transfer). Distinguish natural clones (identical twins) from artificial ones. Dolly the sheep is the classic example.`
+},
+
+// ── EVOLUTION & ECOLOGY ───────────────────────────────────────
+evo_0:{
+  explanation:`Darwin's natural selection works through four requirements. First, individuals in a population show natural <strong>variation</strong>. Second, some of that variation is <strong>heritable</strong> (passed to offspring). Third, more individuals are born than can survive with available resources (<strong>overproduction</strong>). Fourth, individuals with favorable variations are more likely to <strong>survive and reproduce</strong>, passing those traits to more offspring. Over generations, favorable traits become more common — the population evolves.`,
+  analogy:`Natural selection is like a filter. Pour the entire population through the filter — organisms with traits that fit the environment pass through; those that don't are caught. Over many generations, the pool looks more and more like the traits that passed.`,
+  tested:`Know all four requirements: variation, heritability, differential survival/reproduction, change in allele frequency. Questions may ask "what is required for natural selection to occur?" All four must be present. If variation is absent or if traits aren't heritable, natural selection cannot work.`
+},
+evo_1:{
+  explanation:`Biological <strong>fitness</strong> has nothing to do with physical strength or speed. Fitness is specifically measured as <strong>how many surviving, reproducing offspring an organism produces</strong>. A huge, powerful lion that never mates has zero fitness. A small, fragile fish that produces 500 surviving offspring has very high fitness. Fitness is always relative to the current environment — a trait that increases fitness in one environment may reduce it in another.`,
+  analogy:`Fitness is like a score in a game where the <em>only</em> way to score is to have offspring that also survive and reproduce. Physical strength is just one possible strategy — there are many ways to score high.`,
+  tested:`Students often say "the strongest survive" — the correct answer is "the most <strong>reproductively successful</strong> survive." Always frame fitness in terms of reproduction. A classic trick: being very healthy but sterile = zero fitness. Fitness is about passing genes, not personal survival.`
+},
+evo_2:{
+  explanation:`No — <strong>evolution happens to populations, not individuals</strong>. An individual organism's DNA is fixed at birth (barring mutations) and cannot change to improve their survival within their lifetime. What individuals do is adapt <em>behaviorally</em>. What populations do over many generations is <strong>evolve</strong> through changes in allele frequencies. This was one of Darwin's most important insights — and one of the most commonly misunderstood.`,
+  analogy:`A single song cannot change its genre — but a band can change its sound over many albums and years. Individuals are like songs (fixed once recorded); populations are like bands (they evolve their style over time).`,
+  tested:`If a question asks whether a giraffe's neck grew longer because it stretched it during its lifetime, the answer is <strong>no</strong> — that's Lamarckism, which is incorrect. If traits aren't heritable, they don't contribute to evolution. The correct view: giraffes with genetically longer necks survived better and reproduced more.`
+},
+evo_3:{
+  explanation:`A <strong>species</strong> is a group of organisms that can <strong>interbreed naturally</strong> with each other and produce <strong>fertile offspring</strong>. The "fertile" part is essential — horses and donkeys can mate and produce mules, but mules are <strong>sterile</strong>. Therefore horses and donkeys are classified as different species. Reproductive isolation — geographic, behavioral, or genetic barriers that prevent interbreeding — is what keeps species distinct and allows them to diverge over time.`,
+  analogy:`A species is a social club where membership is determined by the ability to have fertile children together. If two groups can't produce fertile children together, they're in different clubs.`,
+  tested:`The biological species concept defines a species by interbreeding + fertile offspring. Know why horses and donkeys are different species (mules are sterile). Questions may also ask what eventually happens when two populations are geographically isolated for a long time (they may diverge into separate species via speciation).`
+},
+evo_4:{
+  explanation:`An <strong>adaptation</strong> is a <strong>heritable trait</strong> that increases an organism's fitness in its specific environment. Adaptations must be genetic — behavioral changes or physical changes during an individual's lifetime are NOT adaptations. Natural selection gradually increases the frequency of adaptive traits in the population over many generations. Examples: camouflage in stick insects, antibiotic resistance in bacteria, the streamlined body of dolphins.`,
+  analogy:`An adaptation is like a well-designed tool for a specific job. A fish's streamlined body is adapted for moving through water the same way a hammer is designed for driving nails — it's purpose-built by the process of selection.`,
+  tested:`Know that adaptations are <strong>heritable (genetic)</strong> and increase fitness. Don't confuse adaptation (evolutionary, heritable) with acclimatization (physiological response during lifetime, not heritable — like getting a tan or growing bigger lungs at high altitude).`
+},
+evo_5:{
+  explanation:`Four types of evidence support evolution. <strong>Fossil record</strong>: shows organisms changing over time and reveals transitional forms. <strong>Comparative anatomy</strong>: homologous structures (same bones, different functions) show common ancestry; vestigial structures show evolutionary history. <strong>Biogeography</strong>: distribution of species across continents matches predictions from common ancestry. <strong>Molecular evidence</strong>: comparing DNA and protein sequences — more similarity = more recent common ancestor.`,
+  analogy:`These four lines of evidence are like four independent witnesses testifying to the same event. They came from different angles (rocks, bones, maps, molecules), but they all point to the same conclusion: species share common ancestors and change over time.`,
+  tested:`Know all four categories. The most-tested distinction: which evidence Darwin would have known about (fossils, anatomy, biogeography) vs. which he couldn't have known about (<strong>molecular/DNA evidence</strong>). If a question asks "which could NOT have been used by Darwin?" — anything involving DNA or protein comparison.`
+},
+evo_6:{
+  explanation:`Darwin published "On the Origin of Species" in <strong>1859</strong>. He was aware of three lines of evidence: the fossil record, comparative anatomy (homologous and vestigial structures), and biogeography (why similar species live near each other). He had <strong>no knowledge</strong> of DNA, genetics, chromosomes, or molecular biology — those fields didn't exist. Mendel's genetics came in the 1860s (unknown to Darwin). DNA structure was solved in 1953. The integration of genetics with Darwin's theory is called the <strong>Modern Synthesis</strong>.`,
+  analogy:`Darwin was a detective who solved the case using only eyewitnesses and physical evidence. Later scientists added DNA testing to the same case — the conclusion didn't change, but the evidence base became much stronger.`,
+  tested:`Exam favorite: "Which of the following would Darwin have used as evidence?" If it involves DNA, genes, proteins, or molecular comparison — the answer is <strong>NO</strong>. Fossils, comparative anatomy, and biogeography = <strong>YES</strong>, Darwin knew these. This distinction is tested regularly.`
+},
+evo_7:{
+  explanation:`<strong>Homologous structures</strong> have the same underlying anatomy (same bones, same embryonic origin) because they descended from a common ancestor — even if they now perform very different functions. Example: human arm, whale flipper, bat wing, bird wing all share the same humerus/radius/ulna bone arrangement. <strong>Analogous structures</strong> have similar functions but <em>different</em> structures and <em>no</em> shared ancestry — they evolved independently. Example: bird wing vs. insect wing (same function of flight, completely different structure).`,
+  analogy:`Homologous = two cousins who both have their grandmother's nose — same inherited structure, different people. Analogous = two strangers who both happen to be wearing hats — similar function, completely unrelated.`,
+  tested:`High-frequency exam topic. The key test: same structure/different function = <strong>homologous</strong> (shared ancestry, evidence for evolution). Similar function/different structure = <strong>analogous</strong> (convergent evolution, no shared ancestry). Wings on birds vs. bats = homologous. Wings on birds vs. insects = analogous.`
+},
+evo_8:{
+  explanation:`<strong>Vestigial structures</strong> are reduced or nonfunctional remnants of structures that were fully functional in an organism's ancestors. They persist because they haven't been strongly selected against. Human examples: <strong>coccyx</strong> (tailbone — remnant of a tail), ear muscles (we can't move our ears like dogs can), appendix, goosebumps (used to raise fur in ancestors). <strong>Whale pelvis bones</strong> — embedded deep in whale muscle — show that whale ancestors walked on land millions of years ago.`,
+  analogy:`A vestigial structure is like a USB-A port on a modern laptop — it's there from the original design, it served a clear purpose in the past, but modern usage has largely moved on. The structure persists even though it's not really needed anymore.`,
+  tested:`Know several examples of vestigial structures and what they reveal about ancestral lifestyles. The exam may ask why vestigial structures are evidence for evolution: they show that today's organisms share ancestry with very different organisms.`
+},
+evo_9:{
+  explanation:`<strong>Microevolution</strong> refers to small-scale changes in <strong>allele frequencies within a single population</strong> over time. These are measurable, real-time changes in a gene pool — like antibiotic resistance spreading through bacteria, or beak size shifting in a bird population after a drought. Microevolution is evolution at the population level within one species. Over long time spans, microevolutionary changes can accumulate into the larger changes we call macroevolution (speciation, major body plan changes).`,
+  analogy:`Microevolution is the slow daily change of a river's course — each shift is small, but over time the river carves a new path. Macroevolution is the canyon the river carved over millions of years.`,
+  tested:`Know the definition of microevolution (change in allele frequency within a population). It is evolution — just on a small, observable scale. Distinguish from macroevolution (origin of new species or higher taxonomic groups). Both are driven by the same mechanisms (selection, drift, flow, mutation).`
+},
+evo_10:{
+  explanation:`<strong>Hardy-Weinberg equilibrium</strong> describes a theoretical population where allele frequencies don't change over time — i.e., a population that is <strong>NOT evolving</strong>. It requires five conditions simultaneously: no mutations, no natural selection, random mating, no gene flow (migration in or out), and a large population size. If any condition is violated, evolution occurs. H-W is mainly used as a <strong>null hypothesis</strong>: if a population deviates from H-W, something is causing evolution.`,
+  analogy:`Hardy-Weinberg is like a perfectly still pond. Any disturbance — a stone thrown in (mutation), wind (selection), a river flowing through (gene flow), or a tiny pond (small population/drift) — creates ripples. In nature, the pond is never truly still.`,
+  tested:`Know all <strong>five conditions</strong>. The exam will say "which of these would DISRUPT Hardy-Weinberg equilibrium?" — any violation of the five conditions is the answer. The key insight: H-W doesn't describe reality; it describes what a non-evolving baseline looks like so we can detect evolution.`
+},
+evo_11:{
+  explanation:`<strong>Genetic drift</strong> is a change in allele frequencies caused by <strong>random chance events</strong>, not by natural selection. It occurs in all populations but has the greatest impact in <strong>small populations</strong>, where the random deaths or reproductive failures of a few individuals can dramatically change allele frequencies — or eliminate an allele entirely. Genetic drift can fix (100%) or eliminate (0%) an allele even if it provides no selective advantage or disadvantage.`,
+  analogy:`Genetic drift is like rolling dice. With millions of rolls, the law of averages rules. With only 10 rolls, you might get all sixes by chance — that's the small population effect. In small populations, random chance dominates.`,
+  tested:`Know that genetic drift is <strong>random, not directional</strong> — unlike natural selection. Also know it's stronger in small populations. The exam often contrasts these: genetic drift = random change. Natural selection = non-random, directional change driven by differential reproductive success.`
+},
+evo_12:{
+  explanation:`Both are forms of genetic drift. The <strong>bottleneck effect</strong> occurs when a population is drastically reduced by a random event (disease, natural disaster, hunting), leaving a small surviving group with much less genetic diversity than the original. All descendants of this small group have reduced diversity. The <strong>founder effect</strong> occurs when a small group breaks away from a larger population and starts a new colony elsewhere — carrying only a subset of the original genetic variation in their gene pool.`,
+  analogy:`Bottleneck: a jar of 1,000 marbles (many colors) is knocked over and only 10 roll out. Your new jar has limited color variety. Founder effect: someone deliberately takes 10 specific marbles to start a new jar elsewhere — only those colors exist in the new location.`,
+  tested:`Know both effects, that both are forms of genetic drift, and both result in <strong>reduced genetic diversity</strong>. Classic examples: cheetahs (nearly identical genetics = past bottleneck), Amish communities (founder effect — small founding group). The exam may present a scenario and ask which effect applies.`
+},
+evo_13:{
+  explanation:`<strong>Gene flow</strong> is the transfer of alleles between populations via <strong>migration</strong>. Individuals moving into a population (immigration) bring new alleles. Individuals moving out (emigration) remove alleles. Gene flow tends to make geographically separate populations <strong>more similar</strong> over time by mixing their gene pools. Barriers to gene flow (mountains, oceans, roads, habitat fragmentation) can isolate populations, allowing them to diverge and potentially speciate.`,
+  analogy:`Gene flow is like mixing two buckets of different-colored paint by pouring a little of each into the other. The more you mix, the more similar the colors become. Seal the buckets and leave them alone — over time they can develop very different colors (populations diverge).`,
+  tested:`Know that gene flow <strong>introduces or removes alleles</strong> from a population and that it violates Hardy-Weinberg equilibrium. High gene flow = populations stay similar. Barriers to gene flow = populations diverge → potential speciation. This connection to speciation (geographic isolation) is commonly tested.`
+},
+evo_14:{
+  explanation:`Selection can act on variation in four ways. <strong>Stabilizing</strong>: the intermediate phenotype is favored; both extremes are eliminated (reduces variation). <strong>Directional</strong>: one extreme phenotype is favored; the distribution shifts that direction. <strong>Disruptive</strong>: both extremes are favored, the middle is eliminated (can split into two groups). <strong>Sexual selection</strong>: traits that improve mating success are favored, even at some survival cost (peacock tails, elk antlers).`,
+  analogy:`Stabilizing = a professor who gives B's to average students and fails the very high and very low scorers. Directional = grading where only the top students pass — everyone else shifts to study harder. Disruptive = only the very top AND very bottom pass, failing everyone in the middle.`,
+  tested:`You'll be shown a bell curve and asked which type of selection is occurring. Key: which part of the distribution is favored? <strong>Middle favored = stabilizing. One tail = directional. Both tails = disruptive.</strong> The exam may also give a real-world example and ask you to classify it.`,
+  svgKey:`naturalSelection`
+},
+evo_15:{
+  explanation:`Both show evolutionary relationships. A <strong>cladogram</strong> shows the <em>branching order</em> of groups — which species share a common ancestor and in what sequence — but does not indicate how much time passed or how much evolutionary change occurred between branches. A <strong>phylogenetic tree</strong> includes a time scale and branch lengths that reflect the degree of evolutionary change. A <strong>clade</strong> is a group consisting of a common ancestor plus all its descendants.`,
+  analogy:`A cladogram is a family tree showing who is related to whom, without dates. A phylogenetic tree is the same family tree with actual birth years and marriage dates added — it shows the timeline, not just the relationships.`,
+  tested:`Know the difference between cladograms (relative relationships only) and phylogenetic trees (include time/change). Also know how to read both: the most closely related species share the <strong>most recent common ancestor</strong>. The exam may show a diagram and ask "which two species are most closely related?" — trace to the nearest shared node.`
+},
+evo_16:{
+  explanation:`On a cladogram, the two most closely related species are those that share the <strong>most recent common ancestor</strong> — the branching point (node) closest to both of them. You find their relationship by tracing back from each species to where they first share a node. The more recently two lineages branched apart, the more closely related they are. Species that share an ancient, deep node are more distantly related even if they appear near each other on the diagram.`,
+  analogy:`On a family tree, your siblings are closest (common ancestor = your parents, very recent). Your cousins are more distant (common ancestor = grandparents). Your third cousins even more so. Tracing to the most recent fork gives you the closest relative.`,
+  tested:`Cladogram-reading questions are very common. The classic trap: two species positioned next to each other on the tips are NOT necessarily most closely related — you must trace back to the actual branching <strong>node</strong>. Always find the most recent shared node, not the physical proximity on the page.`
+},
+evo_17:{
+  explanation:`An <strong>invasive species</strong> is a non-native organism introduced (intentionally or accidentally) into a new ecosystem where it faces <strong>no natural predators, competitors, or diseases</strong> to control its population. Without these checks, the species grows rapidly, often outcompeting native species for food, space, and light. Invasive species are one of the leading causes of biodiversity loss worldwide. Examples: zebra mussels (Great Lakes), kudzu vine (southeastern US), cane toads (Australia).`,
+  analogy:`An invasive species is like a new player who joins a game already knowing all the rules while other players are learning. That player wins every round until others adapt — except in ecosystems, native species often can't adapt fast enough.`,
+  tested:`Know the definition: non-native + no natural population controls + disrupts native ecosystem. Questions may describe a scenario and ask you to identify the invasive species or predict its ecological impact. Common effect: native species decline or go extinct due to competition or predation.`
+},
+evo_18:{
+  explanation:`Every organism is shaped by two categories of environmental factors. <strong>Biotic factors</strong> are living components: predators, prey, competitors, parasites, mutualistic partners, decomposers. <strong>Abiotic factors</strong> are non-living physical and chemical components: temperature, light intensity, rainfall, soil chemistry, pH, salinity, elevation. Both categories influence where organisms live, how populations grow, and which traits are favored by natural selection.`,
+  analogy:`Think of an organism's environment as a recipe. Abiotic factors are the cooking conditions (oven temperature, altitude, humidity). Biotic factors are the other ingredients in the pot — some help, some compete, some try to eat you.`,
+  tested:`Know clear examples of each. Biotic: predation, disease, competition. Abiotic: temperature, water, light, soil type. Questions often give a scenario and ask which factor (biotic or abiotic) is limiting a population. <strong>Disease = biotic. Temperature drop = abiotic.</strong>`
+},
+evo_19:{
+  explanation:`<strong>Density-dependent limiting factors</strong> intensify as population density increases — they're built-in regulators. Examples: disease (spreads faster in crowded populations), competition for food and space, predation (predators focus where prey is dense). <strong>Density-independent factors</strong> affect populations regardless of their size — a wildfire hits a small or large population equally. Examples: natural disasters, extreme weather, volcanic eruptions, drought.`,
+  analogy:`Density-dependent = traffic congestion. The more cars on the road, the worse it gets — density directly drives the effect. Density-independent = a meteor strike. It doesn't matter how many cars were on the road when the meteor hit.`,
+  tested:`Know which factors belong in each category. <strong>Disease, predation, competition = density-dependent.</strong> <strong>Weather events, natural disasters = density-independent.</strong> Questions may describe a scenario (e.g., "a flood kills 80% of the population regardless of density") and ask which type of factor this represents.`
+},
+evo_20:{
+  explanation:`<strong>Exponential growth</strong> (J-curve) occurs when resources are unlimited — the population grows by an increasing amount each generation. This is typical when a species enters a new, resource-rich environment. <strong>Logistic growth</strong> (S-curve) occurs when resources are limited — the population grows fast initially, then slows as it approaches <strong>carrying capacity (K)</strong>, where birth rate equals death rate and the population stabilizes. Most natural populations show logistic growth.`,
+  analogy:`Exponential growth is like compound interest — the balance grows by larger and larger amounts. Logistic growth is like filling a glass with water — fast at first, slowing as you approach the rim, and leveling off when full. Carrying capacity is the rim.`,
+  tested:`Know J-curve = exponential (unlimited resources) and S-curve = logistic (limited resources, levels off at K). A question may show a growth graph and ask you to identify the type, or ask what happens to growth rate as the population approaches K — it <strong>slows down and approaches zero</strong>, not stops abruptly.`,
+  svgKey:`popGrowth`
+},
+evo_21:{
+  explanation:`<strong>Carrying capacity (K)</strong> is the maximum population size that an environment can sustainably support given available resources — food, water, space, shelter, light. Below K, birth rate exceeds death rate and the population grows. At K, birth rate equals death rate and the population stabilizes. Above K, death rate exceeds birth rate (resources are depleted) and the population declines back toward K. Carrying capacity changes if the environment changes — a drought lowers K, improved conditions raise it.`,
+  analogy:`Carrying capacity is like the max occupancy sign on an elevator. You can temporarily squeeze more people in, but the elevator breaks down (resources collapse) and everyone has to leave. The sign is the sustainable limit.`,
+  tested:`Know the definition and symbol (K). Questions ask: what happens to growth rate as population approaches K? (Slows to zero.) What happens if a population overshoots K? (Declines back, possibly oscillates.) Carrying capacity is set by limiting factors in the environment.`
+},
+evo_22:{
+  explanation:`A <strong>keystone species</strong> has a disproportionately large impact on its ecosystem relative to its population size — remove it and the whole ecosystem restructures. Removing a keystone species triggers a <strong>trophic cascade</strong> — a chain reaction of population changes rippling up and down the food web. Classic example: wolves reintroduced to Yellowstone → elk populations reduced → riverbank vegetation recovered → rivers stabilized → beaver populations rebounded. The wolves changed the entire landscape.`,
+  analogy:`A keystone is the central stone at the top of an arch. Pull it out and the whole arch collapses. A keystone species holds the ecological structure together — without it, everything shifts dramatically.`,
+  tested:`Know the definition of keystone species and be able to trace a trophic cascade logic. Questions may give a food web and ask what happens when a top predator or keystone species is removed. Trace the chain: if wolves disappear → deer overpopulate → vegetation depleted → other species decline.`
+},
+evo_23:{
+  explanation:`Species interactions are classified by how each partner is affected. <strong>Mutualism (+/+)</strong>: both benefit (bees and flowers, clownfish and anemone). <strong>Commensalism (+/0)</strong>: one benefits, the other is unaffected (barnacles on a whale, cattle egrets following buffalo). <strong>Parasitism (+/−)</strong>: one benefits at the other's expense (tapeworms, ticks, mistletoe on a tree). Note: predation is sometimes considered separately, but it fits the +/− framework — predator benefits, prey is harmed (and killed).`,
+  analogy:`Mutualism = a win-win business partnership. Commensalism = hitchhiking — you get a free ride, the driver doesn't notice. Parasitism = someone pickpocketing you — they gain, you lose, often without realizing it at first.`,
+  tested:`Know all three types and the +/+, +/0, +/− notation. Common exam traps: confusing commensalism (other unaffected) with mutualism (other also benefits). Also: predation vs. parasitism — <strong>predators kill prey immediately; parasites exploit the host over time without usually killing immediately</strong>.`
+},
+evo_24:{
+  explanation:`<strong>Ecological succession</strong> is the gradual change in species composition in a habitat over time. <strong>Primary succession</strong> begins on completely bare substrate with <strong>no soil</strong> (after volcanic eruption, retreating glacier). Pioneer species like lichens and mosses slowly break down rock and build soil — it can take thousands of years to reach a climax community. <strong>Secondary succession</strong> begins after a disturbance where <strong>soil already exists</strong> (after wildfire, flood, or clear-cutting). It proceeds much faster because soil is already present.`,
+  analogy:`Primary succession = building a house on an empty lot from scratch — you start by hauling in foundation materials. Secondary succession = remodeling a house after a fire — the foundation and soil are intact, so you can rebuild much faster.`,
+  tested:`Know the key distinction: <strong>primary = no soil, starts from scratch</strong> (lichens as pioneer species). <strong>Secondary = soil remains, faster recovery.</strong> The exam may describe a scenario ("a lava flow covered the hillside") and ask which type — no previous soil = primary. After fire or logging = secondary.`
+}
+};
+
+// ═══════════════════════════════════════════════════════════════
+// STATE & STORAGE
+// ═══════════════════════════════════════════════════════════════
+let state = {
+  view: 'dashboard', // dashboard | learn | quiz | summary
+  topicId: null,
+  cardIdx: 0,
+  flipped: false,
+  quizQs: [],    // selected quiz questions for current session
+  quizIdx: 0,
+  quizAnswers: [], // {selected, correct} per question
+  answered: false,
+};
+
+function loadMastery() {
+  try { return JSON.parse(localStorage.getItem('bioStudy_mastery')) || {}; } catch(e) { return {}; }
+}
+function saveMastery(m) {
+  localStorage.setItem('bioStudy_mastery', JSON.stringify(m));
+}
+function getMastery(topicId) {
+  const m = loadMastery();
+  return m[topicId] || {correct:0, total:0};
+}
+function updateMastery(topicId, correct, total) {
+  const m = loadMastery();
+  if (!m[topicId]) m[topicId] = {correct:0, total:0};
+  m[topicId].correct += correct;
+  m[topicId].total += total;
+  saveMastery(m);
+}
+function masteryPct(topicId) {
+  const {correct, total} = getMastery(topicId);
+  return total === 0 ? 0 : Math.round((correct / total) * 100);
+}
+function overallPct() {
+  const ids = TOPICS.map(t=>t.id);
+  const all = ids.map(id => getMastery(id));
+  const tc = all.reduce((s,m)=>s+m.correct,0);
+  const tt = all.reduce((s,m)=>s+m.total,0);
+  return tt === 0 ? 0 : Math.round((tc/tt)*100);
+}
+
+function shuffle(arr) {
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════════
+function goHome() {
+  state = {...state, view:'dashboard', topicId:null, cardIdx:0, flipped:false};
+  render();
+}
+function startOverview(topicId) {
+  state = {...state, view:'overview', topicId};
+  render();
+}
+function startLearn(topicId) {
+  state = {...state, view:'learn', topicId, cardIdx:0, flipped:false};
+  render();
+}
+function startQuiz(topicId) {
+  const topic = TOPICS.find(t=>t.id===topicId);
+  const qs = shuffle(topic.quiz).slice(0,5);
+  state = {...state, view:'quiz', topicId, quizQs:qs, quizIdx:0, quizAnswers:[], answered:false};
+  render();
+}
+function flipCard() {
+  state.flipped = !state.flipped;
+  const inner = document.querySelector('.fc-inner');
+  if (inner) inner.classList.toggle('flipped', state.flipped);
+}
+function navCard(dir) {
+  const topic = TOPICS.find(t=>t.id===state.topicId);
+  state.cardIdx = Math.max(0, Math.min(topic.cards.length-1, state.cardIdx+dir));
+  state.flipped = false;
+  render();
+}
+function selectAnswer(optIdx) {
+  if (state.answered) return;
+  const q = state.quizQs[state.quizIdx];
+  state.quizAnswers.push({selected: optIdx, correct: q.ans});
+  state.answered = true;
+  // Apply styles
+  const opts = document.querySelectorAll('.opt');
+  opts.forEach((el,i) => {
+    el.disabled = true;
+    if (i === q.ans) el.classList.add('correct');
+    else if (i === optIdx && optIdx !== q.ans) el.classList.add('wrong');
+  });
+  // Show feedback
+  const fb = document.getElementById('quiz-feedback');
+  if (fb) {
+    fb.classList.add('show');
+    if (optIdx === q.ans) {
+      fb.classList.add('ok');
+      fb.textContent = '✓ Correct!';
+    } else {
+      fb.classList.add('err');
+      fb.textContent = `✗ Not quite. The correct answer was: "${q.opts[q.ans]}"`;
+    }
+  }
+  // Show next button
+  const btn = document.getElementById('btn-next');
+  if (btn) btn.classList.add('show');
+}
+function nextQuestion() {
+  if (state.quizIdx < state.quizQs.length - 1) {
+    state.quizIdx++;
+    state.answered = false;
+    renderQuizQuestion();
+  } else {
+    // Finish quiz
+    const correct = state.quizAnswers.filter(a=>a.selected===a.correct).length;
+    updateMastery(state.topicId, correct, 5);
+    state.view = 'summary';
+    render();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════════════
+function topicStyle(topic) {
+  return `style="--tc:${topic.color};--tcl:${topic.colorLight}"`;
+}
+
+function openModal(topicId, cardIdx) {
+  const topic = TOPICS.find(t => t.id === topicId);
+  const card = topic.cards[cardIdx];
+  const key = `${topicId}_${cardIdx}`;
+  const rev = REVIEWS[key];
+
+  const overlay = document.getElementById('modal-overlay');
+  const header = document.getElementById('modal-header');
+  const label = document.getElementById('modal-topic-label');
+  const title = document.getElementById('modal-concept-title');
+  const body = document.getElementById('modal-body');
+
+  header.style.setProperty('--tc', topic.color);
+  header.style.setProperty('--tcl', topic.colorLight);
+  label.style.color = topic.color;
+  label.textContent = topic.name;
+  title.textContent = card.q;
+
+  let svgSection = '';
+  if (rev && rev.svgKey && SVGS[rev.svgKey]) {
+    svgSection = `<div class="modal-svg">${SVGS[rev.svgKey]}</div>`;
+  }
+
+  body.innerHTML = rev ? `
+    <div class="modal-section">
+      <div class="modal-sec-label" style="color:${topic.color}">Deep Explanation</div>
+      <p>${rev.explanation}</p>
+      ${svgSection}
+    </div>
+    <div class="modal-section">
+      <div class="modal-sec-label" style="color:${topic.color}">Analogy</div>
+      <p>${rev.analogy}</p>
+    </div>
+    <div class="modal-section">
+      <div class="modal-sec-label" style="color:${topic.color}">Why It's Tested</div>
+      <p>${rev.tested}</p>
+    </div>
+  ` : `<div class="modal-section"><p>No review available for this card.</p></div>`;
+
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
+function render() {
+  const app = document.getElementById('app');
+  const v = state.view;
+  let navTitle = '🧬 Biology Study Guide';
+  let showHome = v !== 'dashboard';
+  if (v === 'overview' || v === 'learn') { const t=TOPICS.find(t=>t.id===state.topicId); navTitle=t?t.name:''; }
+  if (v === 'quiz' || v === 'summary') { const t=TOPICS.find(t=>t.id===state.topicId); navTitle=t?`Quiz — ${t.name}`:'Quiz'; }
+
+  const nav = `<div class="nav"><div class="nav-inner">
+    ${showHome ? `<button class="btn-home" onclick="goHome()">⬅ Home</button>` : ''}
+    <div class="nav-title">${navTitle}</div>
+  </div></div>`;
+
+  let content = '';
+  if (v === 'dashboard') content = renderDashboard();
+  else if (v === 'overview') content = renderOverview();
+  else if (v === 'learn') content = renderLearn();
+  else if (v === 'quiz') content = renderQuizHtml();
+  else if (v === 'summary') content = renderSummary();
+
+  app.innerHTML = nav + `<div class="view">${content}</div>`;
+
+  // Re-attach quiz answer buttons via delegation
+  if (v === 'quiz') {
+    document.querySelectorAll('.opt').forEach((btn,i)=>{
+      btn.addEventListener('click', ()=>selectAnswer(i));
+    });
+    document.getElementById('btn-next')?.addEventListener('click', nextQuestion);
+  }
+  if (v === 'learn') {
+    document.querySelector('.fc-wrap')?.addEventListener('click', flipCard);
+  }
+}
+
+function renderOverview() {
+  const topic = TOPICS.find(t=>t.id===state.topicId);
+  const ov = OVERVIEWS[state.topicId];
+  const ts = topicStyle(topic);
+
+  const conceptMapHtml = ov.conceptMap.map(chain => {
+    const nodes = chain.map((node, i) =>
+      `${i > 0 ? '<span class="cm-arrow">→</span>' : ''}<span class="cm-node${i===0?' root':''}">${node}</span>`
+    ).join('');
+    return `<div class="cm-chain">${nodes}</div>`;
+  }).join('');
+
+  const whatToKnowHtml = ov.whatToKnow.map(p => `<p>${p}</p>`).join('');
+
+  const watchOutHtml = ov.watchOut.map(w =>
+    `<div class="watchout"><span class="watchout-icon">⚠️</span><span>${w}</span></div>`
+  ).join('');
+
+  return `
+  <div class="ov-header" ${ts}>
+    <h2>${topic.name}</h2>
+    <p>Overview · ${topic.cards.length} flashcards · 8-question bank</p>
+  </div>
+  <div class="ov-intro" ${ts}>${ov.intro}</div>
+  <div class="ov-section" ${ts}>
+    <div class="ov-sec-title">🗺️ Key Concepts</div>
+    ${conceptMapHtml}
+  </div>
+  <div class="ov-section" ${ts}>
+    <div class="ov-sec-title">📋 What You Need to Know</div>
+    <div class="ov-body">${whatToKnowHtml}</div>
+  </div>
+  <div class="ov-section" ${ts}>
+    <div class="ov-sec-title">⚠️ Watch Out For</div>
+    ${watchOutHtml}
+  </div>
+  <button class="btn-to-fc" ${ts} onclick="startLearn('${topic.id}')">
+    I'm ready — show me the flashcards →
+  </button>`;
+}
+
+function renderDashboard() {
+  const overall = overallPct();
+  const cards = TOPICS.map(t => {
+    const pct = masteryPct(t.id);
+    const {total} = getMastery(t.id);
+    const status = total===0 ? 'Not started' : `${pct}% mastery`;
+    return `<div class="topic-card" ${topicStyle(t)}>
+      <div class="tc-head">
+        <div class="tc-name">${t.name}</div>
+        <div class="tc-badge">~${t.examQ} Qs</div>
+      </div>
+      <div class="tc-pct">${pct}%</div>
+      <div class="tc-pbar"><div class="tc-pbar-fill" style="width:${pct}%"></div></div>
+      <div class="tc-actions">
+        <button class="btn-act btn-study" onclick="startOverview('${t.id}')">📖 Start Studying</button>
+        <div class="tc-actions-row">
+          <button class="btn-act btn-learn" onclick="startLearn('${t.id}')">🃏 Flashcards</button>
+          <button class="btn-act btn-quiz" onclick="startQuiz('${t.id}')">📝 Quiz</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  return `
+  <div class="dash-head">
+    <h1>🧬 Biology Final Exam<br>Study Guide</h1>
+    <p>75 questions across 4 topics — spring final</p>
+  </div>
+  <div class="overall">
+    <div class="overall-label">Overall Mastery</div>
+    <div class="overall-pct">${overall}%</div>
+    <div class="pbar"><div class="pbar-fill" style="width:${overall}%;background:linear-gradient(90deg,#818cf8,#06b6d4)"></div></div>
+  </div>
+  <div class="topic-grid">${cards}</div>`;
+}
+
+function renderLearn() {
+  const topic = TOPICS.find(t=>t.id===state.topicId);
+  const card = topic.cards[state.cardIdx];
+  const total = topic.cards.length;
+  const idx = state.cardIdx;
+  const svgHtml = card.svg && SVGS[card.svg] ? `<div class="fc-svg">${SVGS[card.svg]}</div>` : '';
+
+  return `
+  <div class="mode-head">
+    <div class="mode-title">
+      <h2>${topic.name}</h2>
+      <p>${total} flashcards — click card to flip</p>
+    </div>
+    <div class="pill">${idx+1} / ${total}</div>
+  </div>
+  <div class="fc-wrap" ${topicStyle(topic)}>
+    <div class="fc-inner${state.flipped?' flipped':''}">
+      <div class="fc-face fc-front">
+        <div class="fc-label">Concept</div>
+        <div class="fc-q">${card.q}</div>
+        <div class="fc-hint">Tap to reveal answer →</div>
+      </div>
+      <div class="fc-face fc-back">
+        <div class="fc-label">Answer</div>
+        <div class="fc-a">${card.a}</div>
+        ${svgHtml}
+        <button class="btn-review" onclick="event.stopPropagation();openModal('${topic.id}',${idx})">📚 Review Subject</button>
+      </div>
+    </div>
+  </div>
+  <div class="card-nav">
+    <button class="btn-nav" onclick="navCard(-1)" ${idx===0?'disabled':''}>←</button>
+    <button class="btn-toquiz" ${topicStyle(topic)} onclick="startQuiz('${topic.id}')">Take Quiz →</button>
+    <button class="btn-nav" onclick="navCard(1)" ${idx===total-1?'disabled':''}>→</button>
+  </div>`;
+}
+
+function renderQuizHtml() {
+  const topic = TOPICS.find(t=>t.id===state.topicId);
+  const q = state.quizQs[state.quizIdx];
+  const total = state.quizQs.length;
+  const pct = Math.round(((state.quizIdx) / total) * 100);
+  const letters = ['A','B','C','D'];
+
+  const opts = q.opts.map((opt,i)=>
+    `<button class="opt" data-idx="${i}">
+      <span class="oletter">${letters[i]}</span>
+      <span>${opt}</span>
+    </button>`
+  ).join('');
+
+  return `
+  <div class="mode-head" ${topicStyle(topic)}>
+    <div class="mode-title">
+      <h2>${topic.name} — Quiz</h2>
+      <p>5 questions drawn randomly</p>
+    </div>
+  </div>
+  <div class="quiz-prog">
+    <div class="qpbar" ${topicStyle(topic)}><div class="qpbar-fill" style="width:${pct}%"></div></div>
+    <div class="qplabel">${state.quizIdx+1} / ${total}</div>
+  </div>
+  <div class="qcard" ${topicStyle(topic)}>
+    <div class="qnum">Question ${state.quizIdx+1}</div>
+    <div class="qtext">${q.q}</div>
+    <div class="opts">${opts}</div>
+    <div class="qfb" id="quiz-feedback"></div>
+    <button class="btn-next" id="btn-next" ${topicStyle(topic)}>${state.quizIdx===total-1?'See Results →':'Next Question →'}</button>
+  </div>`;
+}
+
+function renderQuizQuestion() {
+  // Re-render just the quiz card area without full page reload
+  const app = document.getElementById('app');
+  const topic = TOPICS.find(t=>t.id===state.topicId);
+  const q = state.quizQs[state.quizIdx];
+  const total = state.quizQs.length;
+  const pct = Math.round(((state.quizIdx) / total) * 100);
+  const letters = ['A','B','C','D'];
+
+  const progEl = document.querySelector('.qpbar-fill');
+  const progLbl = document.querySelector('.qplabel');
+  if (progEl) progEl.style.width = pct + '%';
+  if (progLbl) progLbl.textContent = `${state.quizIdx+1} / ${total}`;
+
+  const qcard = document.querySelector('.qcard');
+  if (!qcard) { render(); return; }
+
+  const opts = q.opts.map((opt,i)=>
+    `<button class="opt" data-idx="${i}">
+      <span class="oletter">${letters[i]}</span>
+      <span>${opt}</span>
+    </button>`
+  ).join('');
+
+  qcard.innerHTML = `
+    <div class="qnum">Question ${state.quizIdx+1}</div>
+    <div class="qtext">${q.q}</div>
+    <div class="opts">${opts}</div>
+    <div class="qfb" id="quiz-feedback"></div>
+    <button class="btn-next" id="btn-next" ${topicStyle(topic)}>${state.quizIdx===total-1?'See Results →':'Next Question →'}</button>`;
+
+  document.querySelectorAll('.opt').forEach((btn,i)=>{
+    btn.addEventListener('click', ()=>selectAnswer(i));
+  });
+  document.getElementById('btn-next')?.addEventListener('click', nextQuestion);
+}
+
+function renderSummary() {
+  const topic = TOPICS.find(t=>t.id===state.topicId);
+  const correct = state.quizAnswers.filter(a=>a.selected===a.correct).length;
+  const total = state.quizAnswers.length;
+  const pct = Math.round((correct/total)*100);
+  const emoji = pct===100?'🏆':pct>=80?'🎉':pct>=60?'👍':pct>=40?'📚':'💪';
+  const msg = pct===100?'Perfect score!':pct>=80?'Great job!':pct>=60?'Good effort!':pct>=40?'Keep studying!':'You\'ve got this!';
+  const newMastery = masteryPct(topic.id);
+
+  const breakdown = state.quizAnswers.map((ans,i)=>{
+    const q = state.quizQs[i];
+    const ok = ans.selected === ans.correct;
+    return `<div class="sum-q ${ok?'ok':'err'}">
+      <span class="sum-qicon">${ok?'✓':'✗'}</span>
+      <span>${q.q.length>80?q.q.slice(0,80)+'…':q.q}<br><small>${ok?'Correct':'Answer: '+q.opts[q.ans]}</small></span>
+    </div>`;
+  }).join('');
+
+  return `
+  <div class="mode-head">
+    <div class="mode-title"><h2>Quiz Complete</h2><p>${topic.name}</p></div>
+  </div>
+  <div class="summary" ${topicStyle(topic)}>
+    <div style="font-size:2.8rem">${emoji}</div>
+    <div style="font-size:1.3rem;font-weight:800;margin-top:8px">${msg}</div>
+    <div class="sum-score">${correct} / ${total}</div>
+    <div class="sum-sub">${pct}% correct this session</div>
+    <div class="sum-list">
+      <h3>Question Review</h3>
+      ${breakdown}
+    </div>
+    <div class="sum-actions">
+      <button class="btn-sec" onclick="startLearn('${topic.id}')">📖 Review Flashcards</button>
+      <button class="btn-act btn-quiz" ${topicStyle(topic)} onclick="startQuiz('${topic.id}')">Retry Quiz</button>
+    </div>
+    <div class="mastery-note">Updated mastery for ${topic.name}: ${newMastery}%</div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+render();
+</script>
+</body>
+</html>
