@@ -158,6 +158,36 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
 .btn-modal-close{width:100%;padding:12px;border-radius:12px;border:none;background:var(--surface2);color:var(--text);font-size:.93rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit}
 .btn-modal-close:hover{background:var(--border)}
 
+/* ─── GENETICS INTERACTIVE VISUALS ─── */
+.psq-grid{display:grid;gap:2px;margin:8px 0;border-radius:8px;overflow:hidden;border:1px solid var(--border)}
+.psq-header{padding:5px 3px;text-align:center;font-size:.78rem;font-weight:700;background:var(--surface2);color:var(--muted)}
+.psq-corner{background:var(--surface2)}
+.psq-cell{padding:7px 3px;text-align:center;font-size:.82rem;font-weight:700;min-height:34px;display:flex;align-items:center;justify-content:center}
+.psq-ratio{font-size:.8rem;margin-top:6px;line-height:1.6;padding:8px 10px;border-radius:8px;background:var(--surface2)}
+.psq-bar-wrap{height:14px;border-radius:6px;overflow:hidden;display:flex;margin:4px 0}
+.dom-panels{display:flex;gap:8px;flex-wrap:wrap;justify-content:space-between;margin:8px 0}
+.dom-panel{flex:1;min-width:88px;border-radius:10px;border:2px solid var(--border);padding:9px 7px;background:var(--surface);transition:border-color .2s}
+.dom-panel-title{font-size:.68rem;font-weight:700;text-align:center;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
+.dom-offspring{display:flex;gap:3px;flex-wrap:wrap;justify-content:center;margin-bottom:8px}
+.dom-btn{width:100%;padding:5px 3px;border-radius:7px;border:1.5px solid var(--border);background:transparent;font-size:.67rem;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:3px;transition:all .2s;line-height:1.3}
+.dom-btn:last-child{margin-bottom:0}
+.dom-btn.dom-correct{background:#d1fae5;border-color:#10b981;color:#065f46}
+.dom-btn.dom-wrong{background:#fee2e2;border-color:#ef4444;color:#991b1b}
+.dom-explain{font-size:.7rem;margin-top:5px;padding:5px 6px;border-radius:6px;display:none;line-height:1.45;background:#fef3c7;color:#92400e}
+.dom-explain.show{display:block}
+.xl-grid{display:grid;gap:2px;margin:8px 0;border-radius:8px;overflow:hidden;border:1px solid var(--border)}
+.xl-cell{padding:8px 4px;text-align:center;font-size:.75rem;font-weight:700;min-height:52px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:3px}
+.xl-header{padding:5px 3px;text-align:center;font-size:.76rem;font-weight:700;background:var(--surface2);color:var(--muted)}
+.xl-summary{font-size:.79rem;line-height:1.65;padding:8px 10px;border-radius:8px;background:var(--surface2);margin-top:6px}
+.ped-buttons{display:flex;gap:5px;flex-wrap:wrap;margin:8px 0}
+.ped-btn{flex:1;min-width:72px;padding:7px 5px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface2);font-size:.71rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;text-align:center;line-height:1.3}
+.ped-btn.ped-correct{background:#d1fae5;border-color:#10b981;color:#065f46}
+.ped-btn.ped-wrong{background:#fee2e2;border-color:#ef4444;color:#991b1b}
+.ped-result{padding:8px 10px;border-radius:8px;font-size:.8rem;font-weight:600;margin-top:4px;display:none;line-height:1.55}
+.ped-result.show{display:block}
+.ped-result.ok{background:#d1fae5;color:#065f46}
+.ped-result.err{background:#fee2e2;color:#991b1b}
+.bc-slider{width:100%;accent-color:#10b981;margin:6px 0}
 /* ─── INTERACTIVE VISUALS ─── */
 .widget{border-radius:14px;background:var(--surface);padding:15px 13px;box-shadow:var(--sh);margin-top:14px;overflow:hidden}
 .widget-title{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:5px}
@@ -1580,6 +1610,472 @@ function initCellWidgets(){
   if(document.getElementById('wndj-fc'))initNondisjSim('wndj-fc');
 }
 
+// ═══════════════════════════════════════════════════════════════
+// INTERACTIVE VISUALS — Topic 2 (Genetics) Only
+// ═══════════════════════════════════════════════════════════════
+
+// ─── Punnett Square helpers ─────────────────────────────────────
+function _pParseMono(s){const m=s.trim().match(/^([A-Za-z])([A-Za-z])$/);return m?[m[1],m[2]]:null;}
+function _pParseDi(s){const m=s.trim().match(/^([A-Za-z]{4})$/);if(!m)return null;const c=m[0];return[[c[0],c[1]],[c[2],c[3]]];}
+function _pSortPair(a,b){const up=x=>x===x.toUpperCase();return up(a)?a+b:up(b)?b+a:a+b;}
+function _pDiGametes(pairs){return[pairs[0][0]+pairs[1][0],pairs[0][0]+pairs[1][1],pairs[0][1]+pairs[1][0],pairs[0][1]+pairs[1][1]];}
+function _pCellColor(g){
+  const up=x=>x===x.toUpperCase();
+  if(g.length===2){if(up(g[0])&&up(g[1]))return{bg:'#d1fae5',c:'#065f46'};if(up(g[0])||up(g[1]))return{bg:'#fef3c7',c:'#92400e'};return{bg:'#fee2e2',c:'#991b1b'};}
+  if(g.length===4){const d1=up(g[0])||up(g[1]),d2=up(g[2])||up(g[3]);if(d1&&d2)return{bg:'#d1fae5',c:'#065f46'};if(d1||d2)return{bg:'#fef3c7',c:'#92400e'};return{bg:'#fee2e2',c:'#991b1b'};}
+  return{bg:'#f8fafc',c:'#334155'};
+}
+function _pRenderGrid(containerId,mode,p1raw,p2raw){
+  const el=document.getElementById(containerId);if(!el)return;
+  let gametes1,gametes2,cells,cols;
+  if(mode==='mono'){
+    const a1=_pParseMono(p1raw),a2=_pParseMono(p2raw);
+    if(!a1||!a2){el.innerHTML='<div style="padding:10px;text-align:center;color:var(--muted);font-size:.8rem">Enter two-letter genotypes (e.g. Bb)</div>';return;}
+    gametes1=a1;gametes2=a2;cols=3;
+    cells=[];for(let r=0;r<2;r++)for(let c=0;c<2;c++){const g=_pSortPair(gametes1[r],gametes2[c]);cells.push({g,col:_pCellColor(g)});}
+  } else {
+    const p1=_pParseDi(p1raw),p2=_pParseDi(p2raw);
+    if(!p1||!p2){el.innerHTML='<div style="padding:10px;text-align:center;color:var(--muted);font-size:.8rem">Enter four-letter genotypes (e.g. AaBb)</div>';return;}
+    gametes1=_pDiGametes(p1);gametes2=_pDiGametes(p2);cols=5;
+    cells=[];
+    for(let r=0;r<4;r++)for(let c=0;c<4;c++){
+      const g1=gametes1[r],g2=gametes2[c];
+      const combined=_pSortPair(g1[0],g2[0])+_pSortPair(g1[1],g2[1]);
+      cells.push({g:combined,col:_pCellColor(combined)});
+    }
+  }
+  const n=mode==='mono'?2:4;
+  let html=`<div class="psq-grid" style="grid-template-columns:repeat(${cols},1fr)">`;
+  html+=`<div class="psq-header psq-corner" style="background:#f8fafc"></div>`;
+  gametes2.forEach(g=>html+=`<div class="psq-header">${g}</div>`);
+  for(let r=0;r<n;r++){
+    html+=`<div class="psq-header">${gametes1[r]}</div>`;
+    for(let c=0;c<n;c++){const cell=cells[r*n+c];html+=`<div class="psq-cell" style="background:${cell.col.bg};color:${cell.col.c}">${cell.g}</div>`;}
+  }
+  html+='</div>';
+  // Ratio
+  if(mode==='mono'){
+    const ct={hd:0,het:0,hr:0};
+    const up=x=>x===x.toUpperCase();
+    cells.forEach(({g})=>{if(up(g[0])&&up(g[1]))ct.hd++;else if(up(g[0])||up(g[1]))ct.het++;else ct.hr++;});
+    const tot=cells.length;
+    const domPct=Math.round((ct.hd+ct.het)/tot*100);
+    const recPct=100-domPct;
+    html+=`<div class="psq-ratio"><strong>Phenotype ratio:</strong> ${domPct}% dominant : ${recPct}% recessive`;
+    if(ct.hd&&ct.het&&ct.hr)html+=` (${ct.hd}:${ct.het}:${ct.hr} genotype ratio)`;
+    html+=`<div class="psq-bar-wrap" style="margin-top:5px"><div style="flex:${ct.hd+ct.het};background:#10b981"></div><div style="flex:${ct.hr};background:#ef4444"></div></div></div>`;
+  } else {
+    const ct={bb:0,b1:0,b2:0,aa:0};
+    const up=x=>x===x.toUpperCase();
+    cells.forEach(({g})=>{const d1=up(g[0])||up(g[1]),d2=up(g[2])||up(g[3]);if(d1&&d2)ct.bb++;else if(d1)ct.b1++;else if(d2)ct.b2++;else ct.aa++;});
+    html+=`<div class="psq-ratio"><strong>Phenotype ratio:</strong> ${ct.bb}:${ct.b1}:${ct.b2}:${ct.aa} &nbsp;<span style="color:var(--muted)">(both dominant : trait1 only : trait2 only : both recessive)</span></div>`;
+  }
+  el.innerHTML=html;
+}
+
+// ═══ VISUAL G1: Punnett Square Builder ══════════════════════════
+
+function buildPunnettSquare(id){
+  return `<div id="${id}" class="widget">
+    <div class="widget-title">🔲 Live Punnett Square Builder</div>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
+      <select id="${id}-mode" style="padding:5px 8px;border-radius:7px;border:1.5px solid var(--border);font-size:.8rem;font-weight:600;font-family:inherit;background:var(--surface);cursor:pointer">
+        <option value="mono">Monohybrid (2×2)</option>
+        <option value="di">Dihybrid (4×4)</option>
+      </select>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <div><label style="font-size:.72rem;font-weight:700;color:var(--muted);display:block;margin-bottom:3px">Parent 1</label>
+        <input id="${id}-p1" placeholder="e.g. Bb" maxlength="4" style="width:100%;padding:7px 9px;border-radius:8px;border:1.5px solid var(--border);font-size:.9rem;font-weight:700;font-family:inherit;outline:none;background:var(--surface)"/></div>
+      <div><label style="font-size:.72rem;font-weight:700;color:var(--muted);display:block;margin-bottom:3px">Parent 2</label>
+        <input id="${id}-p2" placeholder="e.g. Bb" maxlength="4" style="width:100%;padding:7px 9px;border-radius:8px;border:1.5px solid var(--border);font-size:.9rem;font-weight:700;font-family:inherit;outline:none;background:var(--surface)"/></div>
+    </div>
+    <div id="${id}-grid"></div>
+    <div style="display:flex;gap:6px;font-size:.72rem;font-weight:600;margin-top:6px;flex-wrap:wrap">
+      <span style="padding:2px 8px;border-radius:5px;background:#d1fae5;color:#065f46">■ Homozygous Dominant</span>
+      <span style="padding:2px 8px;border-radius:5px;background:#fef3c7;color:#92400e">■ Heterozygous</span>
+      <span style="padding:2px 8px;border-radius:5px;background:#fee2e2;color:#991b1b">■ Homozygous Recessive</span>
+    </div>
+  </div>`;
+}
+function initPunnettSquare(id){
+  const wrap=document.getElementById(id);if(!wrap)return;
+  const modeEl=document.getElementById(id+'-mode');
+  const p1El=document.getElementById(id+'-p1');
+  const p2El=document.getElementById(id+'-p2');
+  function update(){
+    const mode=modeEl.value==='di'?'di':'mono';
+    p1El.placeholder=mode==='di'?'e.g. AaBb':'e.g. Bb';
+    p2El.placeholder=mode==='di'?'e.g. AaBb':'e.g. Bb';
+    _pRenderGrid(id+'-grid',mode,p1El.value,p2El.value);
+  }
+  modeEl.addEventListener('change',update);
+  p1El.addEventListener('input',update);
+  p2El.addEventListener('input',update);
+  // Default example
+  p1El.value='Bb';p2El.value='Bb';update();
+}
+
+// ═══ VISUAL G2: Dominance Pattern Identifier ════════════════════
+
+function buildDominancePatterns(id){
+  return `<div id="${id}" class="widget">
+    <div class="widget-title">🎨 Dominance Pattern Identifier</div>
+    <p style="font-size:.78rem;color:var(--muted);margin-bottom:8px">Look at each cross result, then click the correct dominance type below each panel.</p>
+    <div class="dom-panels" id="${id}-panels"></div>
+  </div>`;
+}
+function initDominancePatterns(id){
+  const wrap=document.getElementById(id);if(!wrap)return;
+  const panels=document.getElementById(id+'-panels');
+
+  const domCircle=(fill,stroke,extra='')=>`<svg width="22" height="22" viewBox="0 0 22 22"><circle cx="11" cy="11" r="9" fill="${fill}" stroke="${stroke||'#94a3b8'}" stroke-width="1.5"/>${extra}</svg>`;
+  const codCircle=(id2)=>`<svg width="22" height="22" viewBox="0 0 22 22"><defs><linearGradient id="${id2}" x1="0%" x2="100%"><stop offset="50%" stop-color="#ef4444"/><stop offset="50%" stop-color="#e2e8f0"/></linearGradient></defs><circle cx="11" cy="11" r="9" fill="url(#${id2})" stroke="#94a3b8" stroke-width="1.5"/></svg>`;
+
+  const panelData=[
+    {
+      cross:'Rr × Rr',
+      answer:'standard',
+      label:'Standard Dominance',
+      offspringHTML: domCircle('#ef4444')+domCircle('#ef4444')+domCircle('#ef4444')+domCircle('#e2e8f0'),
+      caption:'3 red : 1 white',
+      wrongA:{type:'codominance',why:'No — codominance shows BOTH traits as distinct patches in the same individual. These offspring show only one color each.'},
+      wrongB:{type:'incomplete',why:'No — incomplete dominance produces a blended intermediate (e.g., pink). These offspring are fully red or fully white — no blending.'},
+    },
+    {
+      cross:'CRCW × CRCW',
+      answer:'codominance',
+      label:'Codominance',
+      offspringHTML: domCircle('#ef4444')+codCircle(id+'cod1')+codCircle(id+'cod2')+domCircle('#e2e8f0'),
+      caption:'1 red : 2 patchy : 1 white',
+      wrongA:{type:'standard',why:'No — standard dominance would make the heterozygous offspring look like one pure type. These show BOTH red and white patches simultaneously.'},
+      wrongB:{type:'incomplete',why:'No — incomplete dominance blends the colors into a new intermediate (e.g., pink). These offspring have distinct red AND white patches, not a blend.'},
+    },
+    {
+      cross:'Rr × Rr',
+      answer:'incomplete',
+      label:'Incomplete Dominance',
+      offspringHTML: domCircle('#ef4444')+domCircle('#fca5a5','#f87171')+domCircle('#fca5a5','#f87171')+domCircle('#e2e8f0'),
+      caption:'1 red : 2 pink (blend) : 1 white',
+      wrongA:{type:'standard',why:'No — standard dominance would make all heterozygous offspring look fully red (dominant). These offspring have an intermediate pink color, which means neither allele is fully dominant.'},
+      wrongB:{type:'codominance',why:'No — codominance shows BOTH traits as distinct patches. These offspring are uniformly pink — neither color is visible separately. That\'s blending, not coexistence.'},
+    },
+  ];
+
+  const types=['standard','codominance','incomplete'];
+  const typeLabels={'standard':'Standard Dominance','codominance':'Codominance','incomplete':'Incomplete Dominance'};
+
+  panelData.forEach((pd,pi)=>{
+    const div=document.createElement('div');div.className='dom-panel';
+    div.innerHTML=`
+      <div class="dom-panel-title">Cross ${pi+1}</div>
+      <div style="font-size:.72rem;text-align:center;color:var(--muted);margin-bottom:5px;font-weight:600">${pd.cross}</div>
+      <div class="dom-offspring">${pd.offspringHTML}</div>
+      <div style="font-size:.68rem;text-align:center;color:var(--muted);margin-bottom:7px">${pd.caption}</div>
+      ${types.map(t=>`<button class="dom-btn" data-type="${t}" data-panel="${pi}">${typeLabels[t]}</button>`).join('')}
+      <div class="dom-explain" id="${id}-explain-${pi}"></div>
+    `;
+    panels.appendChild(div);
+  });
+
+  wrap.addEventListener('click',e=>{
+    const btn=e.target.closest('.dom-btn');if(!btn)return;
+    const pi=+btn.dataset.panel;const t=btn.dataset.type;const pd=panelData[pi];
+    const explainEl=document.getElementById(id+'-explain-'+pi);
+    if(t===pd.answer){
+      btn.classList.add('dom-correct');
+      explainEl.className='dom-explain show';explainEl.style.background='#d1fae5';explainEl.style.color='#065f46';
+      explainEl.textContent='✓ Correct! '+typeLabels[t]+' — '+pd.caption+'.';
+      btn.closest('.dom-panel').style.borderColor='#10b981';
+    } else {
+      btn.classList.add('dom-wrong');
+      const wrongInfo=pd.wrongA.type===t?pd.wrongA:pd.wrongB;
+      explainEl.className='dom-explain show';explainEl.style.background='#fef3c7';explainEl.style.color='#92400e';
+      explainEl.textContent=wrongInfo.why;
+      setTimeout(()=>{btn.classList.remove('dom-wrong');},1200);
+    }
+  });
+}
+
+// ═══ VISUAL G3: X-Linked Inheritance Simulator ══════════════════
+
+function buildXLinkedSim(id){
+  return `<div id="${id}" class="widget">
+    <div class="widget-title">🧬 X-Linked Inheritance Simulator</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <div><label style="font-size:.72rem;font-weight:700;color:var(--muted);display:block;margin-bottom:3px">Mother's genotype</label>
+        <select id="${id}-mom" style="width:100%;padding:6px 7px;border-radius:7px;border:1.5px solid var(--border);font-size:.79rem;font-weight:600;font-family:inherit;background:var(--surface);cursor:pointer">
+          <option value="XNXN">X^N X^N — Unaffected</option>
+          <option value="XNXn">X^N X^n — Carrier</option>
+          <option value="XnXn">X^n X^n — Affected</option>
+        </select></div>
+      <div><label style="font-size:.72rem;font-weight:700;color:var(--muted);display:block;margin-bottom:3px">Father's genotype</label>
+        <select id="${id}-dad" style="width:100%;padding:6px 7px;border-radius:7px;border:1.5px solid var(--border);font-size:.79rem;font-weight:600;font-family:inherit;background:var(--surface);cursor:pointer">
+          <option value="XNY">X^N Y — Unaffected</option>
+          <option value="XnY">X^n Y — Affected</option>
+        </select></div>
+    </div>
+    <div id="${id}-grid"></div>
+    <div id="${id}-summary" class="xl-summary"></div>
+  </div>`;
+}
+function initXLinkedSim(id){
+  const wrap=document.getElementById(id);if(!wrap)return;
+  const momEl=document.getElementById(id+'-mom');
+  const dadEl=document.getElementById(id+'-dad');
+  const gridEl=document.getElementById(id+'-grid');
+  const sumEl=document.getElementById(id+'-summary');
+
+  function xlIcon(sex,status){
+    const fill=sex==='F'?(status==='affected'?'#fecaca':status==='carrier'?'#fef3c7':'#d1fae5'):(status==='affected'?'#bfdbfe':'#dbeafe');
+    const stroke=sex==='F'?(status==='affected'?'#ef4444':'#334155'):(status==='affected'?'#1d4ed8':'#334155');
+    const dot=status==='carrier'?`<circle cx="11" cy="11" r="3.5" fill="${stroke}"/>`:
+              status==='affected'?`<circle cx="11" cy="11" r="3.5" fill="${stroke}" opacity=".4"/>`:'' ;
+    if(sex==='F')return`<svg width="22" height="22" viewBox="0 0 22 22"><circle cx="11" cy="11" r="9" fill="${fill}" stroke="${stroke}" stroke-width="2"/>${dot}</svg>`;
+    return`<svg width="22" height="22" viewBox="0 0 22 22"><rect x="2" y="2" width="18" height="18" rx="2" fill="${fill}" stroke="${stroke}" stroke-width="2"/>${dot}</svg>`;
+  }
+  function xlLabel(sex,status,genotype){
+    const colors={F:{normal:'#065f46',carrier:'#92400e',affected:'#991b1b'},M:{normal:'#1e40af',affected:'#1d4ed8'}};
+    return`<div style="font-size:.68rem;font-weight:700;color:${sex==='F'?colors.F[status]||'#334155':colors.M[status]||'#334155'}">${genotype}</div>`;
+  }
+  function getOutcome(momG,dadG){
+    if(dadG==='Y'){const aff=momG==='Xn';return{sex:'M',status:aff?'affected':'normal',genotype:momG+'Y'};}
+    const aff=momG==='Xn'&&dadG==='Xn';const car=!aff&&(momG==='Xn'||dadG==='Xn');
+    const geno=[momG,dadG].sort((a)=>a==='XN'?-1:1).join('');
+    return{sex:'F',status:aff?'affected':car?'carrier':'normal',genotype:geno};
+  }
+
+  function update(){
+    const mom=momEl.value,dad=dadEl.value;
+    const momGametes=mom==='XNXN'?['XN','XN']:mom==='XNXn'?['XN','Xn']:['Xn','Xn'];
+    const dadGametes=dad==='XNY'?['XN','Y']:['Xn','Y'];
+    // Build 3x3 grid (corner + 2 headers + 2 rows × 2 cells)
+    let html=`<div class="xl-grid" style="grid-template-columns:auto auto auto">`;
+    html+=`<div class="xl-header" style="background:#f8fafc"></div>`;
+    dadGametes.forEach(g=>html+=`<div class="xl-header">${g}</div>`);
+    const outcomes=[];
+    momGametes.forEach(mg=>{
+      html+=`<div class="xl-header">${mg}</div>`;
+      dadGametes.forEach(dg=>{
+        const o=getOutcome(mg,dg);
+        outcomes.push(o);
+        const bg=o.sex==='F'?(o.status==='affected'?'#fee2e2':o.status==='carrier'?'#fef3c7':'#d1fae5'):(o.status==='affected'?'#dbeafe':'#eff6ff');
+        html+=`<div class="xl-cell" style="background:${bg}">${xlIcon(o.sex,o.status)}${xlLabel(o.sex,o.status,o.genotype)}</div>`;
+      });
+    });
+    html+='</div>';
+    gridEl.innerHTML=html;
+
+    // Summary
+    const fem=outcomes.filter(o=>o.sex==='F'),mal=outcomes.filter(o=>o.sex==='M');
+    const femParts=[];
+    ['normal','carrier','affected'].forEach(s=>{const c=fem.filter(o=>o.status===s).length;if(c)femParts.push(`${c*25}% ${s}`);});
+    const malParts=[];
+    ['normal','affected'].forEach(s=>{const c=mal.filter(o=>o.status===s).length;if(c)malParts.push(`${c*25}% ${s}`);});
+    const legend={normal:'⬜ unaffected',carrier:'🟡 carrier (has one X^n, masked by X^N)',affected:'🔴 affected (expresses the trait)'};
+    sumEl.innerHTML=`<strong>Daughters:</strong> ${femParts.join(', ')}<br><strong>Sons:</strong> ${malParts.join(', ')}<br><span style="font-size:.71rem;color:var(--muted)">${Object.values(legend).join(' &nbsp;·&nbsp; ')}</span>`;
+  }
+  momEl.addEventListener('change',update);dadEl.addEventListener('change',update);update();
+}
+
+// ═══ VISUAL G4: Pedigree Reader ═════════════════════════════════
+
+function _pedSVG(type){
+  const r=12,S=(x,y,s,fill)=>s==='F'?`<circle cx="${x}" cy="${y}" r="${r}" fill="${fill}" stroke="#334155" stroke-width="2"/>`:`<rect x="${x-r}" y="${y-r}" width="${r*2}" height="${r*2}" rx="2" fill="${fill}" stroke="#334155" stroke-width="2"/>`;
+  const dot=(x,y)=>`<circle cx="${x}" cy="${y}" r="3.5" fill="#334155"/>`;
+  const L=(x1,y1,x2,y2)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#64748b" stroke-width="1.5"/>`;
+  const T=(x,y,t)=>`<text x="${x}" y="${y}" font-family="sans-serif" font-size="8" fill="#94a3b8" font-weight="bold">${t}</text>`;
+  // generation y-centers
+  const y1=30,y2=100,y3=168;
+
+  if(type==='ar') return `${T(5,33,'I')}${T(5,103,'II')}${T(5,171,'III')}
+    ${S(120,y1,'M','white')}${S(185,y1,'F','white')}${L(132,y1,173,y1)}${L(152,y1,152,y2-38)}
+    ${L(60,y2-38,205,y2-38)}${L(60,y2-38,60,y2-r)}${L(132,y2-38,132,y2-r)}${L(205,y2-38,205,y2-r)}
+    ${S(60,y2,'M','white')}${S(132,y2,'F','white')}${dot(132,y2)}${S(205,y2,'M','#334155')}
+    ${L(217,y2,248,y2)}${S(260,y2,'F','white')}${dot(260,y2)}
+    ${L(232,y2,232,y3-32)}${L(185,y3-32,278,y3-32)}${L(185,y3-32,185,y3-r)}${L(278,y3-32,278,y3-r)}
+    ${S(185,y3,'M','white')}${S(278,y3,'F','#334155')}
+    <g id="ped-clue-ar" style="display:none" opacity="0.9">
+      ${L(132-18,y2+20,132+18,y2+20)}
+      <text x="22" y="${y2+8}" font-family="sans-serif" font-size="7" fill="#d97706" font-weight="bold">← carriers</text>
+      <text x="185" y="${y2+26}" font-family="sans-serif" font-size="7" fill="#d97706" font-weight="bold">affected child of unaffected parents ↑</text>
+    </g>`;
+
+  if(type==='ad') return `${T(5,33,'I')}${T(5,103,'II')}${T(5,171,'III')}
+    ${S(120,y1,'M','#334155')}${S(185,y1,'F','white')}${L(132,y1,173,y1)}${L(152,y1,152,y2-38)}
+    ${L(60,y2-38,240,y2-38)}${L(60,y2-38,60,y2-r)}${L(130,y2-38,130,y2-r)}${L(175,y2-38,175,y2-r)}${L(240,y2-38,240,y2-r)}
+    ${S(60,y2,'M','#334155')}${S(130,y2,'F','white')}${S(175,y2,'F','#334155')}${S(240,y2,'M','white')}
+    ${L(187,y2,220,y2)}${S(232,y2,'M','white')}
+    ${L(209,y2,209,y3-32)}${L(165,y3-32,250,y3-32)}${L(165,y3-32,165,y3-r)}${L(250,y3-32,250,y3-r)}
+    ${S(165,y3,'M','#334155')}${S(250,y3,'F','white')}
+    <g id="ped-clue-ad" style="display:none">
+      <text x="90" y="${y1-15}" font-family="sans-serif" font-size="7" fill="#d97706" font-weight="bold">affected in every gen ↓</text>
+      <text x="40" y="${y2+26}" font-family="sans-serif" font-size="7" fill="#d97706" font-weight="bold">every affected has an affected parent</text>
+    </g>`;
+
+  if(type==='xl') return `${T(5,33,'I')}${T(5,103,'II')}${T(5,171,'III')}
+    ${S(120,y1,'M','white')}${S(185,y1,'F','white')}${dot(185,y1)}${L(132,y1,173,y1)}${L(152,y1,152,y2-38)}
+    ${L(50,y2-38,220,y2-38)}${L(50,y2-38,50,y2-r)}${L(115,y2-38,115,y2-r)}${L(165,y2-38,165,y2-r)}${L(220,y2-38,220,y2-r)}
+    ${S(50,y2,'M','#334155')}${S(115,y2,'F','white')}${dot(115,y2)}${S(165,y2,'M','white')}${S(220,y2,'F','white')}
+    ${L(127,y2,153,y2)}${S(165,y2,'M','white')}
+    ${L(127,y2,127,y3-32)}${L(80,y3-32,175,y3-32)}${L(80,y3-32,80,y3-r)}${L(175,y3-32,175,y3-r)}
+    ${S(80,y3,'M','#334155')}${S(175,y3,'F','white')}
+    <g id="ped-clue-xl" style="display:none">
+      <text x="15" y="${y2+26}" font-family="sans-serif" font-size="7" fill="#d97706" font-weight="bold">only males affected ↑</text>
+      <text x="85" y="${y2+26}" font-family="sans-serif" font-size="7" fill="#d97706" font-weight="bold">carrier mother (dot) passes to sons ↑</text>
+    </g>`;
+
+  return '';
+}
+
+const _pedScenarios=[
+  {type:'ar',answer:'ar',title:'Pedigree 1 of 3',
+   clue:'Two UNAFFECTED Generation I parents have an AFFECTED child → both must be carriers. Carriers shown with a center dot. Trait skips a generation — classic autosomal recessive.',
+   wrongAD:'Not AD — autosomal dominant requires every affected individual to have an affected parent. Both Gen I parents are unaffected here.',
+   wrongXL:'Not X-linked recessive — in this pedigree an affected female appears (Gen III), which would require her mother to also be affected in XLR.'},
+  {type:'ad',answer:'ad',title:'Pedigree 2 of 3',
+   clue:'Affected individuals appear in EVERY generation and every affected person has an affected parent — the hallmark of autosomal dominant inheritance.',
+   wrongAR:'Not AR — autosomal recessive can skip generations (two unaffected carriers have affected child). Here an affected individual appears in every generation without skipping.',
+   wrongXL:'Not X-linked — both males and females are equally affected across generations, and the trait passes from father to daughter (impossible in XLR).'},
+  {type:'xl',answer:'xl',title:'Pedigree 3 of 3',
+   clue:'ONLY MALES are affected. The carrier mother (Gen I and Gen II) is unaffected but passes the trait to her sons. Carrier females shown with a center dot — classic X-linked recessive.',
+   wrongAD:'Not AD — if it were autosomal dominant, females would also be affected. Only males show the trait here.',
+   wrongAR:'Not AR — autosomal recessive would affect males and females equally. Here only males are affected, and carrier females (dots) pass it selectively to sons.'},
+];
+
+function buildPedigreeReader(id){
+  return `<div id="${id}" class="widget">
+    <div class="widget-title">🧾 Pedigree Reader</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:6px">
+      <span id="${id}-pedtitle" style="font-size:.8rem;font-weight:700;color:var(--muted)">Pedigree 1 of 3</span>
+      <button id="${id}-next" style="padding:5px 12px;border-radius:7px;border:1.5px solid var(--border);background:transparent;font-size:.77rem;font-weight:700;cursor:pointer;font-family:inherit">New Pedigree →</button>
+    </div>
+    <svg id="${id}-svg" viewBox="0 0 320 195" style="width:100%;border-radius:8px;border:1px solid var(--border);background:#f8fafc" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div class="ped-buttons" id="${id}-btns">
+      <button class="ped-btn" data-ans="ad">Autosomal Dominant</button>
+      <button class="ped-btn" data-ans="ar">Autosomal Recessive</button>
+      <button class="ped-btn" data-ans="xl">X-Linked Recessive</button>
+      <button class="ped-btn" data-ans="nd">Cannot Determine</button>
+    </div>
+    <div class="ped-result" id="${id}-result"></div>
+    <div style="font-size:.7rem;color:var(--muted);margin-top:6px">Legend: ○ female · □ male · ● affected · ○• carrier</div>
+  </div>`;
+}
+function initPedigreeReader(id){
+  const wrap=document.getElementById(id);if(!wrap)return;
+  const svgEl=document.getElementById(id+'-svg');
+  const titleEl=document.getElementById(id+'-pedtitle');
+  const resultEl=document.getElementById(id+'-result');
+  const nextBtn=document.getElementById(id+'-next');
+  let cur=0,answered=false;
+
+  function load(){
+    const sc=_pedScenarios[cur];
+    svgEl.innerHTML=_pedSVG(sc.type);
+    titleEl.textContent=sc.title;
+    resultEl.classList.remove('show');
+    wrap.querySelectorAll('.ped-btn').forEach(b=>{b.classList.remove('ped-correct','ped-wrong');});
+    answered=false;
+  }
+  wrap.addEventListener('click',e=>{
+    const btn=e.target.closest('.ped-btn[data-ans]');if(!btn||answered)return;
+    const ans=btn.dataset.ans;const sc=_pedScenarios[cur];
+    if(ans===sc.answer){
+      btn.classList.add('ped-correct');answered=true;
+      const clueEl=svgEl.querySelector('[id^="ped-clue-"]');if(clueEl)clueEl.style.display='';
+      resultEl.className='ped-result show ok';resultEl.textContent='✓ '+sc.clue;
+    } else if(ans==='nd'){
+      btn.classList.add('ped-wrong');
+      resultEl.className='ped-result show err';resultEl.textContent='Enough information is provided — try to identify the pattern from the generations shown.';
+      setTimeout(()=>btn.classList.remove('ped-wrong'),1200);
+    } else {
+      btn.classList.add('ped-wrong');
+      const reason=sc.wrongAD&&ans==='ad'?sc.wrongAD:sc.wrongAR&&ans==='ar'?sc.wrongAR:sc.wrongXL;
+      resultEl.className='ped-result show err';resultEl.textContent=reason||'Try again!';
+      setTimeout(()=>btn.classList.remove('ped-wrong'),1200);
+    }
+  });
+  nextBtn.addEventListener('click',()=>{cur=(cur+1)%_pedScenarios.length;load();});
+  load();
+}
+
+// ═══ VISUAL G5: Polygenic Bell Curve ════════════════════════════
+
+function buildBellCurve(id){
+  return `<div id="${id}" class="widget">
+    <div class="widget-title">📊 Polygenic Trait — Bell Curve Simulator</div>
+    <p style="font-size:.78rem;color:var(--muted);margin-bottom:8px">Slide to see how more genes produce a smoother, more continuous distribution.</p>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+      <span style="font-size:.78rem;font-weight:700;color:var(--muted)">Genes:</span>
+      <input type="range" id="${id}-slider" class="bc-slider" min="1" max="5" value="1" style="flex:1">
+      <span id="${id}-gcount" style="font-size:.9rem;font-weight:800;color:#10b981;min-width:14px">1</span>
+    </div>
+    <div id="${id}-label" class="bc-label" style="color:#10b981"></div>
+    <svg id="${id}-svg" viewBox="0 0 300 160" style="width:100%" xmlns="http://www.w3.org/2000/svg"></svg>
+  </div>`;
+}
+function initBellCurve(id){
+  const wrap=document.getElementById(id);if(!wrap)return;
+  const slider=document.getElementById(id+'-slider');
+  const gcount=document.getElementById(id+'-gcount');
+  const lbl=document.getElementById(id+'-label');
+  const svg=document.getElementById(id+'-svg');
+  const ns='http://www.w3.org/2000/svg';
+
+  function binom(n,k){if(k<0||k>n)return 0;let r=1;for(let i=0;i<k;i++)r=r*(n-i)/(i+1);return Math.round(r);}
+  function hslBar(frac){const h=240-frac*180;return`hsl(${h},70%,58%)`;}
+
+  function draw(n){
+    svg.innerHTML='';
+    const classes=2*n+1;
+    const coeffs=Array.from({length:classes},(_,k)=>binom(2*n,k));
+    const maxC=Math.max(...coeffs);
+    const pw=260,ph=120,ox=25,oy=145;
+    const bw=pw/classes;
+
+    // Axis
+    const ax=document.createElementNS(ns,'line');ax.setAttribute('x1',ox);ax.setAttribute('y1',oy);ax.setAttribute('x2',ox+pw);ax.setAttribute('y2',oy);ax.setAttribute('stroke','#cbd5e1');ax.setAttribute('stroke-width','1.5');svg.appendChild(ax);
+    const ay=document.createElementNS(ns,'line');ay.setAttribute('x1',ox);ay.setAttribute('y1',oy-ph-10);ay.setAttribute('x2',ox);ay.setAttribute('y2',oy);ay.setAttribute('stroke','#cbd5e1');ay.setAttribute('stroke-width','1.5');svg.appendChild(ay);
+
+    coeffs.forEach((c,i)=>{
+      const bh=Math.round((c/maxC)*ph);
+      const bx=ox+i*bw,by=oy-bh;
+      const rect=document.createElementNS(ns,'rect');
+      rect.setAttribute('x',(bx+1).toFixed(1));rect.setAttribute('y',by.toFixed(1));
+      rect.setAttribute('width',(bw-2).toFixed(1));rect.setAttribute('height',bh);
+      rect.setAttribute('fill',hslBar(i/(classes-1)));rect.setAttribute('rx','2');
+      svg.appendChild(rect);
+      if(classes<=7){
+        const t=document.createElementNS(ns,'text');t.setAttribute('x',(bx+bw/2).toFixed(1));t.setAttribute('y',oy+11);t.setAttribute('text-anchor','middle');t.setAttribute('font-size','8');t.setAttribute('font-family','sans-serif');t.setAttribute('fill','#64748b');t.textContent=i;svg.appendChild(t);
+      }
+    });
+    const xlabel=document.createElementNS(ns,'text');xlabel.setAttribute('x',ox+pw/2);xlabel.setAttribute('y',oy+22);xlabel.setAttribute('text-anchor','middle');xlabel.setAttribute('font-size','8');xlabel.setAttribute('font-family','sans-serif');xlabel.setAttribute('fill','#94a3b8');xlabel.textContent='← less dominant alleles     more dominant alleles →';svg.appendChild(xlabel);
+  }
+
+  function update(){
+    const n=+slider.value;
+    gcount.textContent=n;
+    const classes=2*n+1;
+    lbl.textContent=`${n} gene pair${n>1?'s':''} → ${classes} possible phenotype classes ${n>=4?'(approaches a bell curve)':''}`;
+    draw(n);
+  }
+  slider.addEventListener('input',update);
+  update();
+}
+
+// ═══ Master genetics widget initializer ══════════════════════════
+
+function initGeneticsWidgets(){
+  if(document.getElementById('wpsq-ov'))initPunnettSquare('wpsq-ov');
+  if(document.getElementById('wpsq-fc'))initPunnettSquare('wpsq-fc');
+  if(document.getElementById('wdom-ov'))initDominancePatterns('wdom-ov');
+  if(document.getElementById('wdom-fc'))initDominancePatterns('wdom-fc');
+  if(document.getElementById('wxl-fc'))initXLinkedSim('wxl-fc');
+  if(document.getElementById('wped-ov'))initPedigreeReader('wped-ov');
+  if(document.getElementById('wped-fc'))initPedigreeReader('wped-fc');
+  if(document.getElementById('wbc-fc'))initBellCurve('wbc-fc');
+}
+
 // STATE & STORAGE
 // ═══════════════════════════════════════════════════════════════
 let state = {
@@ -1797,6 +2293,9 @@ function render() {
   if ((v === 'learn' || v === 'overview') && state.topicId === 'cell') {
     initCellWidgets();
   }
+  if ((v === 'learn' || v === 'overview') && state.topicId === 'genetics') {
+    initGeneticsWidgets();
+  }
 }
 
 function renderOverview() {
@@ -1842,6 +2341,14 @@ function renderOverview() {
     ${buildCellCycleSpinner('wcc-ov')}
     ${buildPmatDragDrop('wpmat-ov')}
     ${buildComparisonBuilder('wcmp-ov')}
+  </div>` : ''}
+  ${topic.id === 'genetics' ? `
+  <div class="ov-section" ${ts}>
+    <div class="ov-sec-title">🎮 Practice Activities</div>
+    <p style="font-size:.82rem;color:var(--muted);margin-bottom:4px">Interact with these before moving to flashcards — they cover the most-tested concepts.</p>
+    ${buildPunnettSquare('wpsq-ov')}
+    ${buildDominancePatterns('wdom-ov')}
+    ${buildPedigreeReader('wped-ov')}
   </div>` : ''}
   <button class="btn-to-fc" ${ts} onclick="startLearn('${topic.id}')">
     I'm ready — show me the flashcards →
@@ -1916,6 +2423,11 @@ function renderLearn() {
         ${topic.id==='cell'&&idx===4 ? buildKaryotypeSpotter('wkary-fc') : ''}
         ${topic.id==='cell'&&idx===14 ? buildComparisonBuilder('wcmp-fc') : ''}
         ${topic.id==='cell'&&idx===16 ? buildNondisjSim('wndj-fc') : ''}
+        ${topic.id==='genetics'&&idx===0 ? buildPunnettSquare('wpsq-fc') : ''}
+        ${topic.id==='genetics'&&idx===6 ? buildDominancePatterns('wdom-fc') : ''}
+        ${topic.id==='genetics'&&idx===8 ? buildXLinkedSim('wxl-fc') : ''}
+        ${topic.id==='genetics'&&idx===11 ? buildBellCurve('wbc-fc') : ''}
+        ${topic.id==='genetics'&&idx===12 ? buildPedigreeReader('wped-fc') : ''}
       </div>
     </div>
   </div>
