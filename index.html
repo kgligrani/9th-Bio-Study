@@ -236,6 +236,57 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
 .ndj-gamete{text-align:center;font-size:.73rem;font-weight:700;min-width:60px}
 .ndj-gamete-badge{padding:3px 8px;border-radius:6px;margin-bottom:3px;display:inline-block}
 .ndj-gamete-desc{font-size:.67rem;color:var(--muted);line-height:1.35}
+/* Shared small widget button */
+.btn-widget-sm{padding:5px 13px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);font-size:.78rem;font-weight:600;color:var(--text);cursor:pointer;transition:background .15s,border-color .15s}
+.btn-widget-sm:hover{background:var(--surface2);border-color:#818cf8}
+.btn-widget-sm:disabled{opacity:.4;cursor:default}
+/* ─── DNA Widgets ─── */
+/* Base Pairing Game */
+.bp-row{display:flex;gap:5px;justify-content:center;margin:5px 0;flex-wrap:wrap}
+.bp-slot{width:34px;height:40px;border-radius:8px;border:2px dashed #cbd5e1;background:#f8fafc;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:white;transition:all .2s;cursor:pointer;touch-action:none;-webkit-user-select:none;user-select:none}
+.bp-slot.over{border-color:#818cf8;background:#eef2ff;transform:scale(1.08)}
+.bp-slot.correct{border-style:solid;animation:none}
+.bp-slot.wrong{border-color:#ef4444;background:#fee2e2;animation:widget-shake .35s ease}
+.bp-bank{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;padding:7px;border-radius:10px;border:1.5px dashed var(--border);background:var(--bg);margin-bottom:6px}
+.bp-tile{width:34px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:white;cursor:grab;transition:transform .15s,box-shadow .15s;touch-action:none;-webkit-user-select:none;user-select:none}
+.bp-tile:hover{transform:translateY(-2px);box-shadow:0 4px 10px rgba(0,0,0,.18)}
+.bp-tile.dragging{opacity:.35;cursor:grabbing}
+.bp-result{text-align:center;padding:7px 12px;border-radius:9px;font-size:.83rem;font-weight:600;margin-top:6px;display:none}
+.bp-result.show{display:block}.bp-result.ok{background:#d1fae5;color:#065f46}
+@keyframes bp-twist{0%{transform:perspective(300px) rotateY(0deg)}33%{transform:perspective(300px) rotateY(22deg)}66%{transform:perspective(300px) rotateY(-18deg)}100%{transform:perspective(300px) rotateY(0deg)}}
+/* Replication Fork */
+.rep-wrap{position:relative;overflow:visible}
+.rep-lbl{position:absolute;background:#1e293b;color:#fff;padding:5px 9px;border-radius:7px;font-size:.71rem;pointer-events:none;opacity:0;transition:opacity .2s;z-index:10;white-space:nowrap;line-height:1.4}
+/* Transcription Walkthrough */
+.tx-step-lbl{background:var(--surface2);border-radius:9px;padding:8px 12px;font-size:.82rem;font-weight:600;color:var(--text);margin-bottom:8px;line-height:1.5;min-height:44px}
+.tx-codon-wrap{margin-top:8px}
+.tx-codon-wrap summary{cursor:pointer;font-size:.78rem;font-weight:600;color:#64748b;padding:3px 0;list-style:none}
+.tx-codon-wrap summary::before{content:'▶ '}
+details[open].tx-codon-wrap summary::before{content:'▼ '}
+.tx-ct{width:100%;border-collapse:collapse;font-size:.65rem;margin-top:6px}
+.tx-ct td,.tx-ct th{border:1px solid var(--border);padding:3px 5px;text-align:center}
+.tx-ct th{background:var(--surface2);font-weight:700;color:var(--muted)}
+.tx-ct tr.stop-row td,.tx-ct td.stop-row{color:#ef4444;font-weight:700}
+/* Mutation Demo */
+.mut-row{display:flex;gap:2px;justify-content:center;flex-wrap:wrap;margin:5px 0;align-items:flex-end}
+.mut-base{width:24px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:white;transition:all .3s}
+.mut-base.fs{background:#ef4444!important;animation:widget-shake .5s ease}
+.mut-divider{width:1.5px;height:32px;background:rgba(0,0,0,.15);align-self:center;flex-shrink:0;margin:0 2px}
+.mut-lbl-row{display:flex;gap:2px;justify-content:center;flex-wrap:wrap;margin-bottom:2px}
+.mut-lbl{font-size:.63rem;font-weight:700;color:var(--muted);width:24px;text-align:center}
+.mut-effect{text-align:center;padding:7px 12px;border-radius:9px;font-size:.82rem;font-weight:600;margin-top:6px;display:none}
+.mut-effect.show{display:block}
+.mut-effect.silent{background:#d1fae5;color:#065f46}
+.mut-effect.missense{background:#fef3c7;color:#92400e}
+.mut-effect.frameshift{background:#fee2e2;color:#991b1b}
+.mut-effect.nonsense{background:#ede9fe;color:#4c1d95}
+/* Gel Electrophoresis */
+.gel-wrap{position:relative}
+.gel-tooltip{position:absolute;background:#1e293b;color:#fff;padding:5px 9px;border-radius:7px;font-size:.71rem;pointer-events:none;opacity:0;transition:opacity .2s;z-index:10;white-space:nowrap}
+.gel-result{text-align:center;padding:7px 12px;border-radius:9px;font-size:.83rem;font-weight:600;margin-top:6px;display:none}
+.gel-result.show{display:block}
+.gel-result.ok{background:#d1fae5;color:#065f46}
+.gel-result.err{background:#fee2e2;color:#991b1b}
 </style>
 </head>
 <body>
@@ -2076,6 +2127,539 @@ function initGeneticsWidgets(){
   if(document.getElementById('wbc-fc'))initBellCurve('wbc-fc');
 }
 
+// ═══ DNA WIDGETS ═══════════════════════════════════════════════
+
+// ── Widget 1: DNA Base Pairing Game ─────────────────────────────
+const _bpCol={A:'#4ade80',T:'#f87171',G:'#60a5fa',C:'#fbbf24'};
+const _bpComp={A:'T',T:'A',G:'C',C:'G'};
+const _bpState={};
+function _bpRand(){const b=['A','T','G','C'];let s='';for(let i=0;i<8;i++)s+=b[Math.floor(Math.random()*4)];return s;}
+function buildDNABasePairing(id){
+  return `<div class="widget" id="${id}" data-wtype="bp">
+  <div class="widget-title">🧬 DNA Base Pairing</div>
+  <svg id="${id}-svg" viewBox="0 0 310 80" style="width:100%;display:block;overflow:visible"></svg>
+  <div style="text-align:center;font-size:.68rem;color:var(--muted);margin:3px 0">← Complement strand (drag tiles below) →</div>
+  <div class="bp-row" id="${id}-slots"></div>
+  <div class="bp-bank" id="${id}-bank"></div>
+  <div class="bp-result" id="${id}-result"></div>
+  <div style="text-align:center;margin-top:5px"><button class="btn-widget-sm" onclick="bpNewStrand('${id}')">New Strand</button></div>
+</div>`;}
+function initDNABasePairing(id){
+  if(!document.getElementById(id))return;
+  _bpState[id]={strand:_bpRand(),slots:new Array(8).fill(null)};
+  _bpDraw(id);
+}
+function bpNewStrand(id){_bpState[id]={strand:_bpRand(),slots:new Array(8).fill(null)};_bpDraw(id);}
+function _bpHex(cx,cy,r){
+  const pts=[];for(let i=0;i<6;i++){const a=Math.PI/180*(60*i-30);pts.push(`${(cx+r*Math.cos(a)).toFixed(1)},${(cy+r*Math.sin(a)).toFixed(1)}`);}
+  return pts.join(' ');
+}
+function _bpDraw(id){
+  const st=_bpState[id];if(!st)return;
+  const svg=document.getElementById(`${id}-svg`);
+  const spacing=36,sx=19,r=13,ty=38;
+  let s='';
+  for(let i=0;i<8;i++){
+    const cx=sx+i*spacing,b=st.strand[i];
+    if(i>0)s+=`<line x1="${sx+(i-1)*spacing+r+1}" y1="${ty}" x2="${cx-r-1}" y2="${ty}" stroke="#94a3b8" stroke-width="1.5"/>`;
+    s+=`<polygon points="${_bpHex(cx,ty,r)}" fill="${_bpCol[b]}" stroke="white" stroke-width="1.5"/>`;
+    s+=`<text x="${cx}" y="${ty+4}" text-anchor="middle" font-size="11" font-weight="700" fill="white" font-family="sans-serif">${b}</text>`;
+  }
+  s+=`<text x="3" y="${ty+4}" font-size="7" font-weight="700" fill="#64748b" font-family="sans-serif">5'→3'</text>`;
+  s+=`<text x="3" y="72" font-size="7" font-weight="700" fill="#64748b" font-family="sans-serif">3'←5'</text>`;
+  svg.innerHTML=s;
+  const done=st.slots.every((v,i)=>v===_bpComp[st.strand[i]]);
+  if(done)svg.style.animation='bp-twist 0.9s ease';else svg.style.animation='';
+  // slots row
+  const slotsEl=document.getElementById(`${id}-slots`);
+  slotsEl.innerHTML='';
+  for(let i=0;i<8;i++){
+    const div=document.createElement('div');
+    div.className='bp-slot'+(st.slots[i]===_bpComp[st.strand[i]]&&st.slots[i]?' correct':'');
+    if(st.slots[i]){div.textContent=st.slots[i];div.style.background=_bpCol[st.slots[i]];div.style.borderColor=st.slots[i]===_bpComp[st.strand[i]]?'#10b981':'#ef4444';}
+    div.dataset.idx=i;div.dataset.wid=id;
+    div.addEventListener('dragover',e=>{e.preventDefault();div.classList.add('over');});
+    div.addEventListener('dragleave',()=>div.classList.remove('over'));
+    div.addEventListener('drop',e=>{e.preventDefault();div.classList.remove('over');const base=e.dataTransfer.getData('base');_bpPlace(id,i,base);});
+    slotsEl.appendChild(div);
+  }
+  // bank
+  const bank=document.getElementById(`${id}-bank`);
+  bank.innerHTML='';
+  ['A','T','G','C'].forEach(b=>{
+    const tile=document.createElement('div');
+    tile.className='bp-tile';tile.textContent=b;tile.style.background=_bpCol[b];
+    tile.draggable=true;
+    tile.addEventListener('dragstart',e=>{e.dataTransfer.setData('base',b);tile.classList.add('dragging');});
+    tile.addEventListener('dragend',()=>tile.classList.remove('dragging'));
+    tile.addEventListener('touchstart',e=>_tdStart(e,tile,(dragged,target)=>{
+      const slot=_closest(target,'[data-idx]');
+      if(slot&&slot.dataset.wid===id)_bpPlace(id,+slot.dataset.idx,b);
+    }),{passive:false});
+    bank.appendChild(tile);
+  });
+  // result
+  const res=document.getElementById(`${id}-result`);
+  if(done){res.textContent='✓ Perfect! Each base is correctly paired — A with T, G with C. The strands are antiparallel and complementary.';res.className='bp-result show ok';}
+  else{res.textContent='';res.className='bp-result';}
+}
+function _bpPlace(id,idx,base){
+  const st=_bpState[id];if(!st)return;
+  st.slots[idx]=base;
+  _bpDraw(id);
+  if(base!==_bpComp[st.strand[idx]]){
+    const slots=document.getElementById(`${id}-slots`);
+    const slot=slots.children[idx];
+    slot.classList.add('wrong');
+    setTimeout(()=>{st.slots[idx]=null;_bpDraw(id);},600);
+  }
+}
+
+// ── Widget 2: DNA Replication Fork Animation ─────────────────────
+const _repState={};
+function buildReplicationFork(id){
+  return `<div class="widget" id="${id}" data-wtype="rep">
+  <div class="widget-title">🔬 DNA Replication Fork</div>
+  <div class="rep-wrap" id="${id}-wrap">
+    <svg id="${id}-svg" viewBox="0 0 310 175" style="width:100%;display:block"></svg>
+    <div class="rep-lbl" id="${id}-lbl"></div>
+  </div>
+  <div style="display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-top:7px">
+    <button class="btn-widget-sm" id="${id}-playbtn" onclick="repToggle('${id}')">⏸ Pause</button>
+    <button class="btn-widget-sm" id="${id}-scbtn" onclick="repShowSC('${id}')">Semi-conservative result</button>
+  </div>
+  <div class="bp-result" id="${id}-scpanel" style="display:none;margin-top:7px"></div>
+</div>`;}
+function initReplicationFork(id){
+  if(!document.getElementById(id))return;
+  _repState[id]={t:0,playing:true,raf:null,sc:false};
+  _repAnimate(id);
+}
+function repToggle(id){
+  const s=_repState[id];if(!s)return;
+  s.playing=!s.playing;
+  document.getElementById(`${id}-playbtn`).textContent=s.playing?'⏸ Pause':'▶ Play';
+  if(s.playing)_repAnimate(id);
+}
+function repShowSC(id){
+  const p=document.getElementById(`${id}-scpanel`);
+  p.style.display='block';
+  p.innerHTML=`<div style="font-size:.82rem;font-weight:700;margin-bottom:6px;color:#0f172a">Semi-Conservative Result</div>
+  <svg viewBox="0 0 310 80" style="width:100%">
+    <text x="75" y="12" text-anchor="middle" font-size="9" font-weight="700" fill="#64748b" font-family="sans-serif">Molecule 1</text>
+    <text x="235" y="12" text-anchor="middle" font-size="9" font-weight="700" fill="#64748b" font-family="sans-serif">Molecule 2</text>
+    ${[0,1].map(m=>{const ox=20+m*160;return `
+    <line x1="${ox+20}" y1="18" x2="${ox+20}" y2="72" stroke="${m===0?'#64748b':'#93c5fd'}" stroke-width="5" stroke-linecap="round"/>
+    <line x1="${ox+36}" y1="18" x2="${ox+36}" y2="72" stroke="${m===0?'#93c5fd':'#64748b'}" stroke-width="5" stroke-linecap="round"/>
+    ${[22,32,42,52,62].map(y=>`<line x1="${ox+20}" y1="${y}" x2="${ox+36}" y2="${y}" stroke="#94a3b8" stroke-width="1.5"/>`).join('')}
+    `;}).join('')}
+    <rect x="4" y="22" width="10" height="10" rx="2" fill="#64748b"/><text x="17" y="31" font-size="8" fill="#64748b" font-family="sans-serif">Original strand</text>
+    <rect x="4" y="36" width="10" height="10" rx="2" fill="#93c5fd"/><text x="17" y="45" font-size="8" fill="#64748b" font-family="sans-serif">New strand</text>
+  </svg>`;
+}
+function _repDraw(id,t){
+  const svg=document.getElementById(`${id}-svg`);if(!svg)return;
+  const forkX=80+t*70,forkY=88;
+  const W=310,maxF=230;
+  const fx=Math.min(forkX,maxF);
+  let s='';
+  // Original helix (left of fork) — two parallel strands with rungs
+  const rungs=Math.floor((fx-30)/14);
+  for(let i=0;i<=rungs;i++){
+    const rx=30+i*14;if(rx>fx-2)break;
+    const y1=forkY-12,y2=forkY+12;
+    s+=`<line x1="${rx}" y1="${y1}" x2="${rx}" y2="${y2}" stroke="#d1d5db" stroke-width="1.5"/>`;
+  }
+  s+=`<line x1="20" y1="${forkY-12}" x2="${fx}" y2="${forkY-12}" stroke="#334155" stroke-width="3" stroke-linecap="round"/>`;
+  s+=`<line x1="20" y1="${forkY+12}" x2="${fx}" y2="${forkY+12}" stroke="#334155" stroke-width="3" stroke-linecap="round"/>`;
+  // Helicase at fork
+  s+=`<circle cx="${fx}" cy="${forkY}" r="9" fill="#f59e0b" stroke="white" stroke-width="1.5"/>`;
+  s+=`<text x="${fx}" y="${forkY+3.5}" text-anchor="middle" font-size="7" font-weight="700" fill="white" font-family="sans-serif">H</text>`;
+  // Leading strand (top, continuous, toward right)
+  if(fx<maxF){
+    const leadLen=fx>80?fx-80:0;
+    s+=`<line x1="${fx}" y1="${forkY-12}" x2="${fx+leadLen*0.9}" y2="${forkY-30}" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round"/>`;
+    // Polymerase dot on leading
+    const plx=fx+(leadLen*0.9)*0.6,ply=forkY-12-(18*0.6);
+    s+=`<circle cx="${plx.toFixed(0)}" cy="${ply.toFixed(0)}" r="6" fill="#7c3aed" stroke="white" stroke-width="1.2"/>`;
+    s+=`<text x="${plx.toFixed(0)}" y="${(ply+3).toFixed(0)}" text-anchor="middle" font-size="6" font-weight="700" fill="white" font-family="sans-serif">P</text>`;
+    // Lagging strand (bottom, Okazaki fragments)
+    const fragCount=Math.floor((fx-80)/40)+1;
+    for(let f=0;f<Math.min(fragCount,3);f++){
+      const fx2=fx-f*40,fx1=Math.max(fx2-32,fx-110);
+      if(fx2>fx)continue;
+      s+=`<line x1="${fx1}" y1="${forkY+28+(f%2)*4}" x2="${fx2}" y2="${forkY+28+(f%2)*4}" stroke="#f87171" stroke-width="2.5" stroke-linecap="round" opacity="${f===0?1:0.65}"/>`;
+    }
+  }
+  // Labels bottom
+  s+=`<text x="155" y="168" text-anchor="middle" font-size="8" fill="#64748b" font-family="sans-serif">Original strand</text>`;
+  s+=`<rect x="100" y="156" width="8" height="8" rx="1" fill="#334155"/><text x="112" y="164" font-size="7" fill="#64748b" font-family="sans-serif">Original</text>`;
+  s+=`<rect x="175" y="156" width="8" height="8" rx="1" fill="#4ade80"/><text x="187" y="164" font-size="7" fill="#64748b" font-family="sans-serif">Leading</text>`;
+  s+=`<rect x="230" y="156" width="8" height="8" rx="1" fill="#f87171"/><text x="242" y="164" font-size="7" fill="#64748b" font-family="sans-serif">Lagging</text>`;
+  // Hover target areas with labels
+  s+=`<rect x="${fx-12}" y="${forkY-10}" width="24" height="20" fill="transparent" class="rep-hotspot" data-lbl="Helicase: unwinds the double helix by breaking hydrogen bonds between base pairs" data-id="${id}"/>`;
+  if(fx<maxF){
+    s+=`<rect x="${(fx+fx*0.4).toFixed(0)}" y="${forkY-38}" width="20" height="20" fill="transparent" class="rep-hotspot" data-lbl="DNA Polymerase: reads template 3'→5' and builds new strand 5'→3'" data-id="${id}"/>`;
+    s+=`<rect x="${fx-60}" y="${forkY+20}" width="50" height="20" fill="transparent" class="rep-hotspot" data-lbl="Okazaki fragments: short pieces built on lagging strand, later joined by DNA ligase" data-id="${id}"/>`;
+    s+=`<rect x="${fx+10}" y="${forkY-40}" width="60" height="20" fill="transparent" class="rep-hotspot" data-lbl="Leading strand: synthesized continuously toward the fork (5'→3' direction)" data-id="${id}"/>`;
+  }
+  svg.innerHTML=s;
+  // re-attach hover listeners
+  svg.querySelectorAll('.rep-hotspot').forEach(el=>{
+    el.addEventListener('mouseenter',ev=>{
+      const lbl=document.getElementById(`${id}-lbl`);if(!lbl)return;
+      const r=ev.target.getBoundingClientRect(),wr=svg.parentElement.getBoundingClientRect();
+      lbl.style.left=(r.left-wr.left)+'px';lbl.style.top=(r.top-wr.top-48)+'px';
+      lbl.textContent=ev.target.dataset.lbl;lbl.style.opacity='1';
+    });
+    el.addEventListener('mouseleave',()=>{const lbl=document.getElementById(`${id}-lbl`);if(lbl)lbl.style.opacity='0';});
+  });
+}
+function _repAnimate(id){
+  const s=_repState[id];if(!s||!s.playing)return;
+  s.t=(s.t+0.004)%1;
+  _repDraw(id,s.t);
+  s.raf=requestAnimationFrame(()=>_repAnimate(id));
+}
+
+// ── Widget 3: Transcription & Translation Walkthrough ────────────
+const _txSteps=[
+  {lbl:'Step 1 — Transcription: RNA polymerase unwinds DNA in the nucleus and reads the template strand 3\'→5\', building a complementary mRNA strand (A→U, T→A, G→C, C→G).',
+   svg:`<svg viewBox="0 0 310 130" style="width:100%">
+   <rect width="310" height="130" rx="8" fill="#f8fafc"/>
+   <text x="155" y="14" text-anchor="middle" font-size="9" font-weight="700" fill="#64748b" font-family="sans-serif">NUCLEUS</text>
+   <rect x="10" y="18" width="290" height="90" rx="8" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="5,4"/>
+   ${[0,1,2,3,4,5].map(i=>`<rect x="${28+i*40}" y="35" width="26" height="20" rx="4" fill="#334155"/><text x="${41+i*40}" y="49" text-anchor="middle" font-size="9" font-weight="700" fill="white" font-family="sans-serif">${['T','A','C','G','T','A'][i]}</text>`).join('')}
+   ${[0,1,2,3,4,5].map(i=>`<rect x="${28+i*40}" y="60" width="26" height="20" rx="4" fill="#7c3aed"/><text x="${41+i*40}" y="74" text-anchor="middle" font-size="9" font-weight="700" fill="white" font-family="sans-serif">${['A','U','G','C','A','U'][i]}</text>`).join('')}
+   <text x="155" y="95" text-anchor="middle" font-size="8" fill="#7c3aed" font-weight="700" font-family="sans-serif">↑ mRNA being built</text>
+   <text x="20" y="49" font-size="8" fill="#334155" font-weight="700" font-family="sans-serif">DNA</text>
+   <text x="20" y="74" font-size="8" fill="#7c3aed" font-weight="700" font-family="sans-serif">mRNA</text>
+   <circle cx="265" cy="55" r="12" fill="#f59e0b"/><text x="265" y="59" text-anchor="middle" font-size="8" font-weight="700" fill="white" font-family="sans-serif">RNAp</text>
+   <text x="155" y="116" text-anchor="middle" font-size="8" fill="#94a3b8" font-family="sans-serif">RNA polymerase reads 3'→5', builds mRNA 5'→3'</text>
+   </svg>`},
+  {lbl:'Step 2 — mRNA exits the nucleus through a nuclear pore and travels to a ribosome in the cytoplasm.',
+   svg:`<svg viewBox="0 0 310 130" style="width:100%">
+   <rect width="310" height="130" rx="8" fill="#f8fafc"/>
+   <ellipse cx="100" cy="65" rx="85" ry="52" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="5,4"/>
+   <text x="100" y="25" text-anchor="middle" font-size="9" font-weight="700" fill="#64748b" font-family="sans-serif">NUCLEUS</text>
+   <rect x="30" y="55" width="130" height="16" rx="4" fill="#7c3aed"/>
+   <text x="95" y="67" text-anchor="middle" font-size="8" font-weight="700" fill="white" font-family="sans-serif">mRNA (AUG·GCA·UAA)</text>
+   <path d="M160,63 C180,63 185,63 200,63" stroke="#7c3aed" stroke-width="2.5" stroke-dasharray="5,3" fill="none" marker-end="url(#arr)"/>
+   <defs><marker id="arr" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6Z" fill="#7c3aed"/></marker></defs>
+   <rect x="196" y="50" width="95" height="30" rx="6" fill="#0ea5e9" opacity=".85"/>
+   <text x="243" y="69" text-anchor="middle" font-size="9" font-weight="700" fill="white" font-family="sans-serif">RIBOSOME</text>
+   <text x="155" y="110" text-anchor="middle" font-size="8" fill="#94a3b8" font-family="sans-serif">mRNA threads through the ribosome for translation</text>
+   </svg>`},
+  {lbl:'Step 3 — Translation: tRNA anticodons match mRNA codons one at a time. Each matching tRNA delivers an amino acid, extending the polypeptide chain.',
+   svg:`<svg viewBox="0 0 310 140" style="width:100%">
+   <rect width="310" height="140" rx="8" fill="#f8fafc"/>
+   <rect x="20" y="55" width="270" height="24" rx="4" fill="#7c3aed"/>
+   <text x="155" y="71" text-anchor="middle" font-size="8" font-weight="700" fill="white" font-family="sans-serif">mRNA:  A U G · G C A · U G C · U A A</text>
+   ${[0,1,2].map(i=>{const x=38+i*78;return `
+   <rect x="${x}" y="28" width="60" height="22" rx="5" fill="#10b981"/>
+   <text x="${x+30}" y="43" text-anchor="middle" font-size="8" font-weight="700" fill="white" font-family="sans-serif">${['UAC','CGU','ACG'][i]} (tRNA)</text>
+   <text x="${x+30}" y="22" text-anchor="middle" font-size="8" fill="#065f46" font-weight="700" font-family="sans-serif">${['Met','Ala','Cys'][i]}</text>
+   <line x1="${x+30}" y1="25" x2="${x+30}" y2="28" stroke="#10b981" stroke-width="1.5"/>`;}).join('')}
+   <path d="M20,79 Q80,100 155,100 Q230,100 290,79" fill="none" stroke="#0ea5e9" stroke-width="3"/>
+   <text x="155" y="95" text-anchor="middle" font-size="8" fill="#0ea5e9" font-weight="700" font-family="sans-serif">Ribosome</text>
+   <text x="155" y="118" text-anchor="middle" font-size="8" fill="#94a3b8" font-family="sans-serif">Growing chain: Met — Ala — Cys ···</text>
+   <rect x="200" y="105" width="95" height="28" rx="6" fill="none" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,3"/>
+   <text x="247" y="122" text-anchor="middle" font-size="8" fill="#92400e" font-weight="700" font-family="sans-serif">Polypeptide chain</text>
+   </svg>`},
+  {lbl:'Step 4 — Stop codon: The ribosome reaches UAA (stop codon). No tRNA matches a stop codon — the ribosome releases the completed polypeptide chain.',
+   svg:`<svg viewBox="0 0 310 130" style="width:100%">
+   <rect width="310" height="130" rx="8" fill="#f8fafc"/>
+   <rect x="20" y="48" width="200" height="22" rx="4" fill="#7c3aed"/>
+   <text x="120" y="63" text-anchor="middle" font-size="8" font-weight="700" fill="white" font-family="sans-serif">mRNA: A U G · G C A · U G C · <tspan fill="#ef4444">U A A</tspan></text>
+   <rect x="226" y="44" width="36" height="30" rx="4" fill="#ef4444"/>
+   <text x="244" y="62" text-anchor="middle" font-size="8" font-weight="700" fill="white" font-family="sans-serif">STOP</text>
+   <path d="M60,70 Q120,90 190,85" fill="none" stroke="#0ea5e9" stroke-width="3"/>
+   <text x="125" y="85" text-anchor="middle" font-size="8" fill="#0ea5e9" font-weight="700" font-family="sans-serif">Ribosome disassembles</text>
+   <rect x="40" y="95" width="230" height="28" rx="8" fill="#10b981"/>
+   <text x="155" y="113" text-anchor="middle" font-size="9" font-weight="700" fill="white" font-family="sans-serif">✓ Protein released: Met–Ala–Cys–···</text>
+   </svg>`}
+];
+const _txCodonTable=`<table class="tx-ct"><thead><tr><th>Codon</th><th>AA</th><th>Codon</th><th>AA</th><th>Codon</th><th>AA</th><th>Codon</th><th>AA</th></tr></thead><tbody>
+<tr><td>UUU/UUC</td><td>Phe</td><td>UCU/UCC/UCA/UCG</td><td>Ser</td><td>UAU/UAC</td><td>Tyr</td><td>UGU/UGC</td><td>Cys</td></tr>
+<tr><td>UUA/UUG</td><td>Leu</td><td>CCU/CCC/CCA/CCG</td><td>Pro</td><td>UAA/UAG/UGA</td><td class="stop-row">Stop</td><td>UGG</td><td>Trp</td></tr>
+<tr><td>CUU/CUC/CUA/CUG</td><td>Leu</td><td>ACU/ACC/ACA/ACG</td><td>Thr</td><td>CAU/CAC</td><td>His</td><td>CGU/CGC/CGA/CGG</td><td>Arg</td></tr>
+<tr><td>AUU/AUC/AUA</td><td>Ile</td><td>GCU/GCC/GCA/GCG</td><td>Ala</td><td>CAA/CAG</td><td>Gln</td><td>AGA/AGG</td><td>Arg</td></tr>
+<tr><td>AUG</td><td>Met★</td><td>GUU/GUC/GUA/GUG</td><td>Val</td><td>AAU/AAC</td><td>Asn</td><td>AGU/AGC</td><td>Ser</td></tr>
+<tr><td>GUU/GUC/GUA/GUG</td><td>Val</td><td>GGU/GGC/GGA/GGG</td><td>Gly</td><td>AAA/AAG</td><td>Lys</td><td>GAU/GAC</td><td>Asp</td></tr>
+<tr><td>GAA/GAG</td><td>Glu</td><td>GGU/GGC/GGA/GGG</td><td>Gly</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+</tbody></table>`;
+function buildTranscriptionWalkthrough(id){
+  return `<div class="widget" id="${id}" data-wtype="tx">
+  <div class="widget-title">🔄 Transcription & Translation</div>
+  <div class="tx-step-lbl" id="${id}-lbl">${_txSteps[0].lbl}</div>
+  <div id="${id}-svg">${_txSteps[0].svg}</div>
+  <div style="display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-top:7px">
+    <button class="btn-widget-sm" id="${id}-prev" onclick="txStep('${id}',-1)" disabled>← Prev</button>
+    <span id="${id}-counter" style="font-size:.78rem;color:var(--muted);align-self:center">Step 1 / 4</span>
+    <button class="btn-widget-sm" id="${id}-next" onclick="txStep('${id}',1)">Next →</button>
+  </div>
+  <details class="tx-codon-wrap"><summary>Codon Reference Table</summary>${_txCodonTable}</details>
+</div>`;}
+function initTranscriptionWalkthrough(id){
+  if(!document.getElementById(id))return;
+  document.getElementById(id).dataset.txStep='0';
+}
+function txStep(id,dir){
+  const el=document.getElementById(id);if(!el)return;
+  let step=+el.dataset.txStep+dir;
+  step=Math.max(0,Math.min(3,step));
+  el.dataset.txStep=step;
+  document.getElementById(`${id}-lbl`).textContent=_txSteps[step].lbl;
+  document.getElementById(`${id}-svg`).innerHTML=_txSteps[step].svg;
+  document.getElementById(`${id}-counter`).textContent=`Step ${step+1} / 4`;
+  document.getElementById(`${id}-prev`).disabled=step===0;
+  document.getElementById(`${id}-next`).disabled=step===3;
+}
+
+// ── Widget 4: Mutation Impact Demonstrator ───────────────────────
+const _mutAA={
+  'UUU':'Phe','UUC':'Phe','UUA':'Leu','UUG':'Leu','CUU':'Leu','CUC':'Leu','CUA':'Leu','CUG':'Leu',
+  'AUU':'Ile','AUC':'Ile','AUA':'Ile','AUG':'Met','GUU':'Val','GUC':'Val','GUA':'Val','GUG':'Val',
+  'UCU':'Ser','UCC':'Ser','UCA':'Ser','UCG':'Ser','CCU':'Pro','CCC':'Pro','CCA':'Pro','CCG':'Pro',
+  'ACU':'Thr','ACC':'Thr','ACA':'Thr','ACG':'Thr','GCU':'Ala','GCC':'Ala','GCA':'Ala','GCG':'Ala',
+  'UAU':'Tyr','UAC':'Tyr','UAA':'Stop','UAG':'Stop','CAU':'His','CAC':'His','CAA':'Gln','CAG':'Gln',
+  'AAU':'Asn','AAC':'Asn','AAA':'Lys','AAG':'Lys','GAU':'Asp','GAC':'Asp','GAA':'Glu','GAG':'Glu',
+  'UGU':'Cys','UGC':'Cys','UGA':'Stop','UGG':'Trp','CGU':'Arg','CGC':'Arg','CGA':'Arg','CGG':'Arg',
+  'AGU':'Ser','AGC':'Ser','AGA':'Arg','AGG':'Arg','GGU':'Gly','GGC':'Gly','GGA':'Gly','GGG':'Gly'
+};
+const _mutColDNA={A:'#4ade80',T:'#f87171',G:'#60a5fa',C:'#fbbf24'};
+const _mutColRNA={A:'#4ade80',U:'#f87171',G:'#60a5fa',C:'#fbbf24'};
+const _mutState={};
+function _mutDnaToMrna(dna){return dna.split('').map(b=>({A:'U',T:'A',G:'C',C:'G'}[b]||'?')).join('');}
+function _mutCodons(mrna){const c=[];for(let i=0;i<mrna.length-2;i+=3)c.push(mrna.slice(i,i+3));return c;}
+function buildMutationDemo(id){
+  return `<div class="widget" id="${id}" data-wtype="mut">
+  <div class="widget-title">⚡ Mutation Impact</div>
+  <div id="${id}-content"></div>
+  <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:7px">
+    <button class="btn-widget-sm" onclick="mutApply('${id}','sub')">Substitution</button>
+    <button class="btn-widget-sm" onclick="mutApply('${id}','ins')">Insertion</button>
+    <button class="btn-widget-sm" onclick="mutApply('${id}','del')">Deletion</button>
+    <button class="btn-widget-sm" onclick="mutReset('${id}')">Reset</button>
+  </div>
+  <div class="mut-effect" id="${id}-effect"></div>
+</div>`;}
+function initMutationDemo(id){
+  if(!document.getElementById(id))return;
+  _mutState[id]={dna:'ATGCGTAAC',orig:'ATGCGTAAC',mut:null};
+  _mutDraw(id);
+}
+function _mutDraw(id){
+  const s=_mutState[id];if(!s)return;
+  const mrna=_mutDnaToMrna(s.dna);
+  const codons=_mutCodons(mrna);
+  const aas=codons.map(c=>_mutAA[c]||'?');
+  const fs=s.mut==='ins'||s.mut==='del';
+  let html=`<div style="font-size:.7rem;font-weight:700;color:var(--muted);margin-bottom:3px">DNA template (3'→5'):</div>`;
+  html+=`<div class="mut-row">`;
+  for(let i=0;i<s.dna.length;i++){
+    if(i>0&&i%3===0)html+=`<div class="mut-divider"></div>`;
+    const highlight=s.mutPos===i;
+    html+=`<div class="mut-base${fs&&i>=(s.mutPos||0)?' fs':''}" style="background:${highlight?'#f43f5e':_mutColDNA[s.dna[i]]||'#94a3b8'};${highlight?'transform:scale(1.15)':''}">${s.dna[i]}</div>`;
+  }
+  html+=`</div>`;
+  html+=`<div style="font-size:.7rem;font-weight:700;color:var(--muted);margin:4px 0 3px">mRNA (5'→3'):</div>`;
+  html+=`<div class="mut-row">`;
+  for(let i=0;i<mrna.length;i++){
+    if(i>0&&i%3===0)html+=`<div class="mut-divider"></div>`;
+    html+=`<div class="mut-base${fs&&i>=(s.mutPos||0)*1?' fs':''}" style="background:${_mutColRNA[mrna[i]]||'#94a3b8'}">${mrna[i]}</div>`;
+  }
+  html+=`</div>`;
+  html+=`<div style="font-size:.7rem;font-weight:700;color:var(--muted);margin:4px 0 3px">Protein:</div>`;
+  html+=`<div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap">`;
+  aas.forEach(aa=>{
+    const stop=aa==='Stop';
+    html+=`<span style="padding:2px 7px;border-radius:6px;font-size:.72rem;font-weight:700;background:${stop?'#fee2e2':fs?'#fee2e2':'#dbeafe'};color:${stop?'#991b1b':fs?'#991b1b':'#1e40af'}">${aa}</span>`;
+  });
+  html+=`</div>`;
+  document.getElementById(`${id}-content`).innerHTML=html;
+}
+function mutApply(id,type){
+  const s=_mutState[id];if(!s)return;
+  const bases=['A','T','G','C'];
+  const pos=1+Math.floor(Math.random()*(s.dna.length-2));
+  s.mutPos=pos;s.mut=type;
+  let d=s.orig.split('');
+  if(type==='sub'){
+    const cur=d[pos];const opts=bases.filter(b=>b!==cur);d[pos]=opts[Math.floor(Math.random()*opts.length)];
+  } else if(type==='ins'){
+    d.splice(pos,0,bases[Math.floor(Math.random()*4)]);
+  } else {
+    d.splice(pos,1);
+  }
+  s.dna=d.join('');
+  _mutDraw(id);
+  // show effect label
+  const mrna=_mutDnaToMrna(s.dna);
+  const origMrna=_mutDnaToMrna(s.orig);
+  const eff=document.getElementById(`${id}-effect`);
+  if(type==='ins'||type==='del'){
+    eff.textContent='Frameshift mutation — every codon downstream is scrambled. Almost always produces a nonfunctional protein.';
+    eff.className='mut-effect show frameshift';
+  } else {
+    const origAA=_mutAA[origMrna.slice(Math.floor(pos/3)*3, Math.floor(pos/3)*3+3)];
+    const newAA=_mutAA[mrna.slice(Math.floor(pos/3)*3, Math.floor(pos/3)*3+3)];
+    if(newAA==='Stop'){eff.textContent='Nonsense mutation — premature stop codon created. Protein is truncated.';eff.className='mut-effect show nonsense';}
+    else if(origAA===newAA){eff.textContent='Silent mutation — the codon changed but the amino acid is the same. The genetic code is redundant!';eff.className='mut-effect show silent';}
+    else{eff.textContent=`Missense mutation — amino acid changed from ${origAA} to ${newAA}. The protein may lose function.`;eff.className='mut-effect show missense';}
+  }
+}
+function mutReset(id){
+  const s=_mutState[id];if(!s)return;
+  s.dna=s.orig;s.mut=null;s.mutPos=null;
+  _mutDraw(id);
+  const eff=document.getElementById(`${id}-effect`);
+  eff.textContent='';eff.className='mut-effect';
+}
+
+// ── Widget 5: Gel Electrophoresis Simulator ──────────────────────
+const _gelState={};
+const _gelLadder=[3000,2000,1500,1000,750,500,250];
+const _gelSamples=[
+  [2800,1800,900,400],
+  [2000,1200,600,300],
+  [1500,800,350,200]
+];
+const _gelCrimeScene=[2000,1200,600,300]; // matches sample index 1
+const _gelGH=130; // gel height available for migration
+const _gelMaxLog=Math.log(_gelLadder[0]);
+const _gelMinLog=Math.log(_gelLadder[_gelLadder.length-1]);
+function _gelY(bp,progress){
+  const frac=(Math.log(bp)-_gelMinLog)/(_gelMaxLog-_gelMinLog);
+  const maxDist=_gelGH*0.88;
+  return 28+maxDist*(1-frac)*progress;
+}
+function buildGelSim(id){
+  return `<div class="widget" id="${id}" data-wtype="gel">
+  <div class="widget-title">🔬 Gel Electrophoresis</div>
+  <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:7px">
+    <button class="btn-widget-sm" onclick="gelApplyCurrent('${id}')">Apply Current</button>
+    <button class="btn-widget-sm" onclick="gelCrimeMode('${id}')">Crime Scene Mode</button>
+    <button class="btn-widget-sm" onclick="gelReset('${id}')">Reset</button>
+  </div>
+  <div class="gel-wrap" id="${id}-wrap">
+    <svg id="${id}-svg" viewBox="0 0 310 195" style="width:100%;display:block"></svg>
+    <div class="gel-tooltip" id="${id}-tip"></div>
+  </div>
+  <div class="gel-result" id="${id}-result"></div>
+  <div id="${id}-crime" style="display:none;text-align:center;font-size:.82rem;font-weight:600;margin-top:6px;color:#0f172a"></div>
+</div>`;}
+function initGelSim(id){
+  if(!document.getElementById(id))return;
+  _gelState[id]={progress:0,animating:false,crime:false,answered:false};
+  _gelDraw(id);
+}
+function gelApplyCurrent(id){
+  const s=_gelState[id];if(!s)return;
+  if(s.animating)return;
+  s.progress=0;s.animating=true;s.answered=false;
+  document.getElementById(`${id}-result`).className='gel-result';
+  _gelAnimate(id);
+}
+function _gelAnimate(id){
+  const s=_gelState[id];if(!s||!s.animating)return;
+  s.progress=Math.min(s.progress+0.012,1);
+  _gelDraw(id);
+  if(s.progress<1)requestAnimationFrame(()=>_gelAnimate(id));
+  else s.animating=false;
+}
+function gelReset(id){
+  const s=_gelState[id];if(!s)return;
+  s.progress=0;s.crime=false;s.answered=false;
+  document.getElementById(`${id}-crime`).style.display='none';
+  document.getElementById(`${id}-result`).className='gel-result';
+  _gelDraw(id);
+}
+function gelCrimeMode(id){
+  const s=_gelState[id];if(!s)return;
+  s.crime=true;s.progress=1;s.answered=false;
+  document.getElementById(`${id}-result`).className='gel-result';
+  const crime=document.getElementById(`${id}-crime`);
+  crime.style.display='block';
+  crime.innerHTML='🔍 Crime Scene Mode: Match the crime scene lane (far right) to the correct suspect. Click a suspect lane (1, 2, or 3).';
+  _gelDraw(id);
+}
+function gelPickSuspect(id,idx){
+  const s=_gelState[id];if(!s||s.answered)return;
+  s.answered=true;
+  const res=document.getElementById(`${id}-result`);
+  if(idx===1){
+    res.textContent='✓ Match Found! Suspect 2\'s band pattern matches the crime scene sample.';
+    res.className='gel-result show ok';
+  } else {
+    res.textContent='✗ No match. Look at band positions carefully — size determines how far each fragment travels.';
+    res.className='gel-result show err';
+  }
+}
+function _gelDraw(id){
+  const s=_gelState[id];if(!s)return;
+  const p=s.progress;
+  const laneW=54,laneGap=6,startX=12,topY=18,gelH=160;
+  let svg='';
+  // Gel box background
+  svg+=`<rect x="${startX}" y="${topY}" width="${4*(laneW+laneGap)-laneGap}" height="${gelH}" rx="6" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>`;
+  // + electrode top, - electrode bottom
+  svg+=`<text x="155" y="12" text-anchor="middle" font-size="8" font-weight="700" fill="#ef4444" font-family="sans-serif">− (negative / wells)</text>`;
+  svg+=`<text x="155" y="188" text-anchor="middle" font-size="8" font-weight="700" fill="#3b82f6" font-family="sans-serif">+ (positive / DNA migrates toward +)</text>`;
+  const laneLabels=s.crime?['Ladder','Suspect 1','Suspect 2','Suspect 3']:['Ladder','Sample 1','Sample 2','Sample 3'];
+  for(let lane=0;lane<4;lane++){
+    const lx=startX+lane*(laneW+laneGap);
+    // Well
+    svg+=`<rect x="${lx+laneW/2-12}" y="${topY+2}" width="24" height="8" rx="3" fill="#cbd5e1"/>`;
+    // Lane label
+    svg+=`<text x="${lx+laneW/2}" y="${topY+gelH+12}" text-anchor="middle" font-size="7.5" font-weight="700" fill="#64748b" font-family="sans-serif">${laneLabels[lane]}</text>`;
+    const bands=lane===0?_gelLadder:_gelSamples[lane-1];
+    bands.forEach(bp=>{
+      const by=_gelY(bp,p)+topY;
+      const bandH=4;
+      const isClickable=lane>0&&p>0.5;
+      svg+=`<rect x="${lx+4}" y="${by}" width="${laneW-8}" height="${bandH}" rx="2" fill="${lane===0?'#64748b':'#334155'}" opacity="${lane===0?0.6:0.85}" class="${isClickable?'gel-band':''}" data-bp="${bp}" data-lane="${lane}" data-id="${id}" style="cursor:${isClickable?'pointer':'default'}"/>`;
+      // Ladder size labels
+      if(lane===0&&p>0.3){
+        svg+=`<text x="${lx-2}" y="${by+4}" text-anchor="end" font-size="7" fill="#64748b" font-family="sans-serif">${bp}</text>`;
+      }
+    });
+    // Crime scene lane
+    if(s.crime&&lane===3){
+      svg+=`<rect x="${lx+4}" y="${topY-14}" width="${laneW-8}" height="12" rx="3" fill="#ef4444" opacity=".85"/>`;
+      svg+=`<text x="${lx+laneW/2}" y="${topY-5}" text-anchor="middle" font-size="7" font-weight="700" fill="white" font-family="sans-serif">CRIME SCENE</text>`;
+      _gelCrimeScene.forEach(bp=>{
+        const by=_gelY(bp,p)+topY;
+        svg+=`<rect x="${lx+4}" y="${by}" width="${laneW-8}" height="4" rx="2" fill="#ef4444" opacity=".85"/>`;
+      });
+    }
+    // Click targets for crime mode
+    if(s.crime&&lane>0&&lane<4){
+      svg+=`<rect x="${lx}" y="${topY}" width="${laneW}" height="${gelH}" rx="4" fill="transparent" stroke="${s.answered?'transparent':'#818cf8'}" stroke-width="${s.answered?0:1.5}" stroke-dasharray="4,3" style="cursor:pointer" onclick="gelPickSuspect('${id}',${lane-1})"/>`;
+    }
+  }
+  document.getElementById(`${id}-svg`).innerHTML=svg;
+  // Band hover tooltips
+  document.getElementById(`${id}-svg`).querySelectorAll('.gel-band').forEach(el=>{
+    el.addEventListener('mouseenter',ev=>{
+      const tip=document.getElementById(`${id}-tip`);if(!tip)return;
+      const r=ev.target.getBoundingClientRect(),wr=document.getElementById(`${id}-wrap`).getBoundingClientRect();
+      tip.style.left=(r.left-wr.left+4)+'px';tip.style.top=(r.top-wr.top-28)+'px';
+      tip.textContent=`${ev.target.dataset.bp} bp`;tip.style.opacity='1';
+    });
+    el.addEventListener('mouseleave',()=>{const tip=document.getElementById(`${id}-tip`);if(tip)tip.style.opacity='0';});
+  });
+}
+
+// ── Master DNA widget initializer ────────────────────────────────
+function initDnaWidgets(){
+  ['wbp-ov','wbp-fc0','wbp-fc1'].forEach(i=>{if(document.getElementById(i))initDNABasePairing(i);});
+  if(document.getElementById('wrep-fc2'))initReplicationFork('wrep-fc2');
+  ['wtx-ov','wtx-fc6'].forEach(i=>{if(document.getElementById(i))initTranscriptionWalkthrough(i);});
+  if(document.getElementById('wmut-fc11'))initMutationDemo('wmut-fc11');
+  if(document.getElementById('wgel-fc13'))initGelSim('wgel-fc13');
+}
+
 // STATE & STORAGE
 // ═══════════════════════════════════════════════════════════════
 let state = {
@@ -2296,6 +2880,9 @@ function render() {
   if ((v === 'learn' || v === 'overview') && state.topicId === 'genetics') {
     initGeneticsWidgets();
   }
+  if ((v === 'learn' || v === 'overview') && state.topicId === 'dna') {
+    initDnaWidgets();
+  }
 }
 
 function renderOverview() {
@@ -2349,6 +2936,13 @@ function renderOverview() {
     ${buildPunnettSquare('wpsq-ov')}
     ${buildDominancePatterns('wdom-ov')}
     ${buildPedigreeReader('wped-ov')}
+  </div>` : ''}
+  ${topic.id === 'dna' ? `
+  <div class="ov-section" ${ts}>
+    <div class="ov-sec-title">🎮 Practice Activities</div>
+    <p style="font-size:.82rem;color:var(--muted);margin-bottom:4px">Interact with these before moving to flashcards — they cover the most-tested concepts.</p>
+    ${buildDNABasePairing('wbp-ov')}
+    ${buildTranscriptionWalkthrough('wtx-ov')}
   </div>` : ''}
   <button class="btn-to-fc" ${ts} onclick="startLearn('${topic.id}')">
     I'm ready — show me the flashcards →
@@ -2428,6 +3022,12 @@ function renderLearn() {
         ${topic.id==='genetics'&&idx===8 ? buildXLinkedSim('wxl-fc') : ''}
         ${topic.id==='genetics'&&idx===11 ? buildBellCurve('wbc-fc') : ''}
         ${topic.id==='genetics'&&idx===12 ? buildPedigreeReader('wped-fc') : ''}
+        ${topic.id==='dna'&&idx===0 ? buildDNABasePairing('wbp-fc0') : ''}
+        ${topic.id==='dna'&&idx===1 ? buildDNABasePairing('wbp-fc1') : ''}
+        ${topic.id==='dna'&&idx===2 ? buildReplicationFork('wrep-fc2') : ''}
+        ${topic.id==='dna'&&idx===6 ? buildTranscriptionWalkthrough('wtx-fc6') : ''}
+        ${topic.id==='dna'&&idx===11 ? buildMutationDemo('wmut-fc11') : ''}
+        ${topic.id==='dna'&&idx===13 ? buildGelSim('wgel-fc13') : ''}
       </div>
     </div>
   </div>
