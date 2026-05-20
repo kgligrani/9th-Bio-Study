@@ -287,6 +287,28 @@ details[open].tx-codon-wrap summary::before{content:'▼ '}
 .gel-result.show{display:block}
 .gel-result.ok{background:#d1fae5;color:#065f46}
 .gel-result.err{background:#fee2e2;color:#991b1b}
+/* ─── Evo Widgets ─── */
+/* Natural Selection (shared result style uses .bp-result) */
+.ns-info{font-size:.78rem;text-align:center;margin:5px 0;font-weight:600;color:var(--text);line-height:1.5}
+/* Selection Bell Curves */
+.sel-example{font-size:.78rem;color:var(--text);padding:7px 10px;border-radius:8px;background:var(--surface2);margin-top:8px;display:none;line-height:1.5}
+/* Cladogram */
+.clad-org{transition:background .15s,color .15s,border-color .15s}
+/* Population Growth */
+.pop-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px 12px;margin-top:7px;font-size:.73rem;color:var(--text)}
+.pop-grid label{display:flex;flex-direction:column;gap:2px}
+.pop-grid input[type=range]{accent-color:#10b981}
+/* Genetic Drift */
+.drift-jars{display:flex;gap:6px;overflow-x:auto;justify-content:center}
+.drift-jar-wrap{text-align:center;min-width:82px}
+.drift-jar-lbl{font-size:.65rem;font-weight:700;color:var(--muted);margin-bottom:3px}
+/* Species Interactions */
+.si-scene{text-align:center;padding:6px 0}
+.si-name{font-weight:700;font-size:.88rem;margin-bottom:2px}
+.si-desc{font-size:.76rem;color:var(--muted);margin-bottom:8px}
+.si-result{padding:7px 12px;border-radius:9px;font-size:.82rem;font-weight:600;margin-top:7px;display:none;line-height:1.5}
+.si-result.show.ok{display:block;background:#d1fae5;color:#065f46}
+.si-result.show.err{display:block;background:#fee2e2;color:#991b1b}
 </style>
 </head>
 <body>
@@ -2127,6 +2149,589 @@ function initGeneticsWidgets(){
   if(document.getElementById('wbc-fc'))initBellCurve('wbc-fc');
 }
 
+// ═══ EVO WIDGETS ════════════════════════════════════════════════
+
+// ── Widget 1: Natural Selection Simulator ────────────────────────
+const _nsState={};
+function buildNatSelSim(id){
+  return `<div class="widget" id="${id}" data-wtype="ns">
+  <div class="widget-title">🦋 Natural Selection Simulator</div>
+  <div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap">
+    <div style="flex:1;min-width:170px">
+      <div style="font-size:.68rem;font-weight:700;color:var(--muted);margin-bottom:3px">TREE BARK</div>
+      <svg id="${id}-tree" viewBox="0 0 200 130" style="width:100%;border-radius:10px;border:1.5px solid var(--border)"></svg>
+    </div>
+    <div style="flex:1;min-width:120px">
+      <div style="font-size:.68rem;font-weight:700;color:var(--muted);margin-bottom:3px">ALLELE FREQUENCY</div>
+      <svg id="${id}-chart" viewBox="0 0 130 110" style="width:100%"></svg>
+    </div>
+  </div>
+  <div class="ns-info" id="${id}-info">Generation 0 · Light: 50% · Dark: 50%</div>
+  <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:4px;align-items:center">
+    <span style="font-size:.75rem;font-weight:600;color:var(--muted)">Generations:</span>
+    <input type="range" id="${id}-slider" min="0" max="10" value="0" style="width:90px;accent-color:#06b6d4" oninput="nsRunGens('${id}',+this.value)">
+    <span id="${id}-gennum" style="font-size:.75rem;font-weight:700;min-width:14px">0</span>
+    <button class="btn-widget-sm" onclick="nsChangeEnv('${id}')">Change Environment</button>
+    <button class="btn-widget-sm" onclick="nsReset('${id}')">Reset</button>
+  </div>
+</div>`;}
+function initNatSelSim(id){
+  if(!document.getElementById(id))return;
+  _nsState[id]={env:'light',light:15,dark:15};
+  _nsRender(id);
+}
+function nsChangeEnv(id){
+  const s=_nsState[id];if(!s)return;
+  s.env=s.env==='light'?'dark':'light';
+  const slider=document.getElementById(`${id}-slider`);
+  if(slider)slider.value=0;
+  s.light=15;s.dark=15;
+  _nsRender(id);
+}
+function nsReset(id){
+  const s=_nsState[id];if(!s)return;
+  s.light=15;s.dark=15;
+  const slider=document.getElementById(`${id}-slider`);
+  if(slider)slider.value=0;
+  _nsRender(id);
+}
+function nsRunGens(id,gens){
+  const s=_nsState[id];if(!s)return;
+  document.getElementById(`${id}-gennum`).textContent=gens;
+  s.light=15;s.dark=15;
+  for(let g=0;g<gens;g++){
+    const sl=s.env==='light'?0.84:0.22;
+    const sd=s.env==='dark'?0.84:0.22;
+    let nl=Math.round(s.light*sl+Math.random()*2-1);
+    let nd=Math.round(s.dark*sd+Math.random()*2-1);
+    const tot=nl+nd;
+    if(tot>0){const sc=Math.min(30/tot,2.5);nl=Math.round(nl*sc);nd=Math.round(nd*sc);}
+    s.light=Math.max(1,nl);s.dark=Math.max(1,nd);
+  }
+  _nsRender(id);
+}
+function _nsMoth(cx,cy,col){
+  return `<ellipse cx="${cx-5}" cy="${cy}" rx="7" ry="3.5" fill="${col}" opacity="0.88" transform="rotate(-22,${cx-5},${cy})"/>
+<ellipse cx="${cx+5}" cy="${cy}" rx="7" ry="3.5" fill="${col}" opacity="0.88" transform="rotate(22,${cx+5},${cy})"/>
+<ellipse cx="${cx}" cy="${cy}" rx="2" ry="5" fill="${col}" opacity="0.95"/>`;
+}
+function _nsRender(id){
+  const s=_nsState[id];if(!s)return;
+  const tot=s.light+s.dark,lp=Math.round(s.light/tot*100),dp=100-lp;
+  const bg=s.env==='light'?'#d4d4d4':'#4b5563';
+  const bk=s.env==='light'?'#9ca3af':'#374151';
+  // tree SVG
+  const treeSvg=document.getElementById(`${id}-tree`);
+  let t=`<rect width="200" height="130" fill="${bg}"/>`;
+  for(let i=0;i<7;i++){const x=15+i*26+Math.sin(i*1.9)*5;t+=`<line x1="${x}" y1="0" x2="${x+4}" y2="130" stroke="${bk}" stroke-width="4" opacity="0.45"/>`;}
+  // distribute moths proportionally across 20 slots
+  const total=s.light+s.dark;
+  const scale=Math.min(20/total,1);
+  const showL=Math.round(s.light*scale),showD=Math.round(s.dark*scale);
+  const pos=[];
+  for(let r=0;r<4;r++)for(let c=0;c<5;c++)pos.push({x:22+c*36+Math.sin(r*c+1)*4,y:22+r*26+Math.cos(r+c)*4});
+  for(let i=0;i<showL;i++)t+=_nsMoth(pos[i%20].x,pos[i%20].y,'#e5e7eb');
+  for(let i=0;i<showD;i++)t+=_nsMoth(pos[(showL+i)%20].x,pos[(showL+i)%20].y,'#1f2937');
+  treeSvg.innerHTML=t;
+  // chart SVG
+  const chartSvg=document.getElementById(`${id}-chart`);
+  const bH=70,lH=Math.round(lp/100*bH),dH=Math.round(dp/100*bH);
+  let c=`<text x="65" y="9" text-anchor="middle" font-size="8" font-weight="700" fill="#64748b" font-family="sans-serif">Frequency %</text>`;
+  c+=`<rect x="8" y="${10+bH-lH}" width="36" height="${lH}" rx="3" fill="#e5e7eb" stroke="#9ca3af" stroke-width="1.2"/>`;
+  c+=`<text x="26" y="${9+bH-lH}" text-anchor="middle" font-size="9" font-weight="700" fill="#374151" font-family="sans-serif">${lp}%</text>`;
+  c+=`<rect x="82" y="${10+bH-dH}" width="36" height="${dH}" rx="3" fill="#374151" stroke="#6b7280" stroke-width="1.2"/>`;
+  c+=`<text x="100" y="${9+bH-dH}" text-anchor="middle" font-size="9" font-weight="700" fill="${dp>20?'#374151':'#374151'}" font-family="sans-serif">${dp}%</text>`;
+  c+=`<line x1="4" y1="${10+bH}" x2="126" y2="${10+bH}" stroke="#94a3b8" stroke-width="1"/>`;
+  c+=`<text x="26" y="${12+bH}" text-anchor="middle" font-size="8" fill="#64748b" font-family="sans-serif">Light</text>`;
+  c+=`<text x="100" y="${12+bH}" text-anchor="middle" font-size="8" fill="#64748b" font-family="sans-serif">Dark</text>`;
+  const envTxt=s.env==='light'?'Light bark — light moths hidden':'Dark bark — dark moths hidden';
+  c+=`<rect x="4" y="88" width="122" height="14" rx="3" fill="${s.env==='light'?'#f1f5f9':'#374151'}"/>`;
+  c+=`<text x="65" y="98" text-anchor="middle" font-size="7" font-weight="700" fill="${s.env==='light'?'#475569':'#e2e8f0'}" font-family="sans-serif">${envTxt}</text>`;
+  chartSvg.innerHTML=c;
+  // info line
+  const gen=document.getElementById(`${id}-slider`)?.value||0;
+  const favored=s.env==='light'?'light':'dark';
+  document.getElementById(`${id}-info`).textContent=`Generation ${gen} · Light: ${lp}% · Dark: ${dp}% · ${favored} moths have survival advantage`;
+}
+
+// ── Widget 2: Types of Selection Bell Curve Animator ─────────────
+function buildSelectionBells(id){
+  const types=['stabilizing','directional','disruptive'];
+  const titles=['Stabilizing','Directional','Disruptive'];
+  const examples=[
+    'Human birth weight: very small and very large babies have lower survival. Average weight is favored — less variation over time.',
+    'Antibiotic resistance: bacteria with resistance survive; susceptible bacteria are eliminated — the population shifts toward one extreme.',
+    'Beak size when food is bimodal: small and large beaks work efficiently; medium beaks are inefficient — two peaks emerge over time.'
+  ];
+  return `<div class="widget" id="${id}" data-wtype="sel">
+  <div class="widget-title">📊 Types of Natural Selection</div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+    ${types.map((t,i)=>`<div style="flex:1;min-width:100px;text-align:center">
+      <div style="font-size:.7rem;font-weight:700;color:var(--muted);margin-bottom:2px">${titles[i]}</div>
+      <svg id="${id}-${t}" viewBox="0 0 110 75" style="width:100%;cursor:pointer" onclick="selShowEx('${id}',${i})"></svg>
+      <button class="btn-widget-sm" style="font-size:.7rem;padding:3px 8px;margin-top:3px" onclick="selAnimate('${id}','${t}')">Show</button>
+    </div>`).join('')}
+  </div>
+  <div class="sel-example" id="${id}-ex"></div>
+</div>`;}
+function _selEx(id,i){
+  const exs=[
+    'Stabilizing: Human birth weight — very small and very large babies survive less. Average weight is favored, reducing variation.',
+    'Directional: Antibiotic resistance — resistant bacteria survive; susceptible ones die. The whole population shifts toward resistance.',
+    'Disruptive: Beak size when food is bimodal — small seeds and large seeds are available, so small and large beaks win; medium beaks starve.'
+  ];return exs[i];
+}
+function selShowEx(id,i){
+  const el=document.getElementById(`${id}-ex`);
+  if(el){el.textContent=_selEx(id,i);el.style.display='block';}
+}
+function selAnimate(id,type){
+  let prog=0;
+  const step=()=>{prog=Math.min(prog+0.035,1);_selDraw(id,type,prog);if(prog<1)requestAnimationFrame(step);};
+  requestAnimationFrame(step);
+}
+function _selG(x,mu,sig){return Math.exp(-0.5*((x-mu)/sig)**2);}
+function _selDraw(id,type,prog){
+  const svg=document.getElementById(`${id}-${type}`);if(!svg)return;
+  const ox=8,oy=67,sX=94,sY=52;
+  let pts=[];
+  const N=55;
+  for(let i=0;i<=N;i++){
+    const x=i/N;
+    let y;
+    if(type==='stabilizing'){
+      y=_selG(x,0.5,0.15)*(1-prog)+_selG(x,0.5,0.07+0.08*(1-prog))*prog;
+    } else if(type==='directional'){
+      y=_selG(x,0.5,0.15)*(1-prog)+_selG(x,0.5+0.28*prog,0.15)*prog;
+    } else {
+      y=_selG(x,0.5,0.15)*(1-prog)+(_selG(x,0.25,0.1)+_selG(x,0.75,0.1))/2*prog;
+    }
+    pts.push({x,y});
+  }
+  let s=`<rect x="${ox}" y="${oy-sY}" width="${sX}" height="${sY}" rx="3" fill="#f8fafc"/>`;
+  s+=`<line x1="${ox}" y1="${oy}" x2="${ox+sX}" y2="${oy}" stroke="#cbd5e1" stroke-width="1"/>`;
+  s+=`<line x1="${ox}" y1="${oy-sY}" x2="${ox}" y2="${oy}" stroke="#cbd5e1" stroke-width="1"/>`;
+  s+=`<text x="${ox+sX/2}" y="74" text-anchor="middle" font-size="7" fill="#94a3b8" font-family="sans-serif">Phenotype</text>`;
+  // survival zone shading (shown at start)
+  if(prog<0.15){
+    let zd='';
+    for(let i=0;i<=N;i++){
+      const x=i/N;
+      let inZone=false;
+      if(type==='stabilizing'&&x>0.3&&x<0.7)inZone=true;
+      if(type==='directional'&&x>0.52)inZone=true;
+      if(type==='disruptive'&&(x<0.33||x>0.67))inZone=true;
+      if(inZone){const px=(ox+x*sX).toFixed(1);zd+=zd?`L${px},${oy}`:`M${px},${oy-sY*0.5}`;}
+    }
+  }
+  const pathD=`M${ox+pts[0].x*sX},${oy} `+pts.map(p=>`L${(ox+p.x*sX).toFixed(1)},${(oy-p.y*sY).toFixed(1)}`).join(' ')+` L${ox+sX},${oy} Z`;
+  s+=`<path d="${pathD}" fill="${prog>0.4?'#818cf8':'#06b6d4'}" opacity="0.75"/>`;
+  // Labels for final state
+  if(prog>0.85){
+    if(type==='stabilizing')s+=`<text x="${ox+47}" y="${oy-sY+10}" text-anchor="middle" font-size="6.5" fill="#4c1d95" font-weight="700" font-family="sans-serif">↑ narrower</text>`;
+    if(type==='directional')s+=`<text x="${ox+62}" y="${oy-sY+10}" text-anchor="middle" font-size="6.5" fill="#4c1d95" font-weight="700" font-family="sans-serif">→ shifted</text>`;
+    if(type==='disruptive')s+=`<text x="${ox+47}" y="${oy-sY+10}" text-anchor="middle" font-size="6.5" fill="#4c1d95" font-weight="700" font-family="sans-serif">↔ two peaks</text>`;
+  }
+  svg.innerHTML=s;
+}
+function initSelectionBells(id){
+  if(!document.getElementById(id))return;
+  ['stabilizing','directional','disruptive'].forEach(t=>_selDraw(id,t,0));
+}
+
+// ── Widget 3: Cladogram Builder ──────────────────────────────────
+const _cladState={};
+const _cladOrgs=['Fish','Frog','Lizard','Mouse','Human'];
+const _cladEmoji=['🐟','🐸','🦎','🐭','🧑'];
+// Relatedness score: 1=most closely related
+const _cladRel={'0,1':4,'0,2':4,'0,3':4,'0,4':4,'1,2':3,'1,3':3,'1,4':3,'2,3':2,'2,4':2,'3,4':1};
+function buildCladogram(id){
+  return `<div class="widget" id="${id}" data-wtype="clad">
+  <div class="widget-title">🌿 Cladogram Builder</div>
+  <div style="font-size:.76rem;color:var(--muted);margin-bottom:6px">Select two organisms below to test: are they the most closely related pair? Then reveal the full cladogram.</div>
+  <div style="display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin-bottom:7px" id="${id}-orgs">
+    ${_cladOrgs.map((o,i)=>`<button class="btn-widget-sm clad-org" id="${id}-o${i}" data-i="${i}" onclick="cladSel('${id}',${i})">${_cladEmoji[i]} ${o}</button>`).join('')}
+  </div>
+  <div id="${id}-qr" style="font-size:.81rem;font-weight:600;text-align:center;border-radius:9px;padding:7px 12px;display:none;margin-bottom:7px"></div>
+  <svg id="${id}-svg" viewBox="0 0 310 162" style="width:100%;display:block"></svg>
+  <div style="display:flex;gap:7px;justify-content:center;margin-top:6px">
+    <button class="btn-widget-sm" onclick="cladAnswer('${id}')">Show Answer</button>
+    <button class="btn-widget-sm" onclick="cladReset('${id}')">Reset</button>
+  </div>
+</div>`;}
+function initCladogram(id){
+  if(!document.getElementById(id))return;
+  _cladState[id]={sel:[],showAns:false};
+  _cladDraw(id);
+}
+function cladSel(id,i){
+  const s=_cladState[id];if(!s)return;
+  if(s.sel.includes(i))s.sel=s.sel.filter(x=>x!==i);
+  else if(s.sel.length<2)s.sel.push(i);
+  else s.sel=[i];
+  document.querySelectorAll(`#${id}-orgs .clad-org`).forEach(b=>{
+    const bi=+b.dataset.i;const on=s.sel.includes(bi);
+    b.style.background=on?'#818cf8':'';b.style.color=on?'white':'';b.style.borderColor=on?'#6366f1':'';
+  });
+  const qr=document.getElementById(`${id}-qr`);
+  if(s.sel.length===2){
+    const [a,b]=[...s.sel].sort((x,y)=>x-y);
+    const score=_cladRel[`${a},${b}`];
+    const hit=score===1;
+    const an=_cladOrgs[a],bn=_cladOrgs[b];
+    qr.textContent=hit
+      ?`✓ Correct! ${an} and ${bn} are most closely related — both are mammals sharing the most recent common ancestor.`
+      :`Not the closest pair. ${an} and ${bn} share an ancestor, but Mouse & Human are more recently related (both mammals). Trace back to find the nearest shared node.`;
+    qr.style.cssText=`display:block;background:${hit?'#d1fae5':'#fef3c7'};color:${hit?'#065f46':'#92400e'}`;
+  }else{qr.style.display='none';}
+}
+function cladAnswer(id){const s=_cladState[id];if(s){s.showAns=true;_cladDraw(id);}}
+function cladReset(id){
+  _cladState[id]={sel:[],showAns:false};
+  document.getElementById(`${id}-qr`).style.display='none';
+  document.querySelectorAll(`#${id}-orgs .clad-org`).forEach(b=>{b.style.background='';b.style.color='';b.style.borderColor='';});
+  _cladDraw(id);
+}
+function _cladDraw(id){
+  const s=_cladState[id];if(!s)return;
+  const svg=document.getElementById(`${id}-svg`);if(!svg)return;
+  const show=s.showAns;
+  // tip y positions
+  const ty=[18,50,82,114,146];
+  // node x positions and trait labels
+  const nodes=[
+    {x:22,yFrom:18,yTo:146,label:'Backbone',col:'#10b981'},   // all
+    {x:62,yFrom:50,yTo:146,label:'4 Limbs',col:'#06b6d4'},     // frog+
+    {x:112,yFrom:82,yTo:146,label:'Amniotic egg',col:'#f59e0b'},// lizard+
+    {x:162,yFrom:114,yTo:146,label:'Hair/milk',col:'#8b5cf6'},  // mouse+human
+  ];
+  let o=`<rect width="310" height="162" rx="8" fill="#f8fafc"/>`;
+  if(!show)o+=`<text x="155" y="11" text-anchor="middle" font-size="7.5" fill="#94a3b8" font-family="sans-serif">Click "Show Answer" to reveal shared traits at each branch node</text>`;
+  // Horizontal lines to tips
+  const tipX=270;
+  nodes.forEach((n,ni)=>{
+    o+=`<line x1="${n.x}" y1="${ty[ni+1]}" x2="${tipX}" y2="${ty[ni+1]}" stroke="#94a3b8" stroke-width="1.8"/>`;
+  });
+  o+=`<line x1="${nodes[0].x}" y1="${ty[0]}" x2="${tipX}" y2="${ty[0]}" stroke="#94a3b8" stroke-width="1.8"/>`;
+  // Vertical connectors
+  nodes.forEach((n,ni)=>{
+    const prevX=ni===0?n.x:(nodes[ni-1].x);
+    o+=`<line x1="${n.x}" y1="${ty[ni+1]}" x2="${n.x}" y2="${n.yTo}" stroke="#94a3b8" stroke-width="1.8"/>`;
+    if(ni>0)o+=`<line x1="${nodes[ni-1].x}" y1="${ty[ni+1]}" x2="${n.x}" y2="${ty[ni+1]}" stroke="#94a3b8" stroke-width="1.8"/>`;
+  });
+  o+=`<line x1="${nodes[0].x}" y1="${ty[0]}" x2="${nodes[0].x}" y2="${ty[1]}" stroke="#94a3b8" stroke-width="1.8"/>`;
+  // Organism labels
+  ty.forEach((y,i)=>{
+    const sel=s.sel.includes(i);
+    o+=`<text x="272" y="${y+5}" font-size="14" font-family="sans-serif">${_cladEmoji[i]}</text>`;
+    o+=`<text x="290" y="${y+5}" font-size="9" font-weight="${sel?'700':'400'}" fill="${sel?'#6366f1':'#475569'}" font-family="sans-serif">${_cladOrgs[i]}</text>`;
+  });
+  // Node circles and trait labels
+  nodes.forEach((n,ni)=>{
+    const ny=ni===0?Math.round((ty[0]+ty[1])/2):ty[ni+1];
+    o+=`<circle cx="${n.x}" cy="${ny}" r="5" fill="${show?n.col:'#e2e8f0'}" stroke="${show?'white':'#94a3b8'}" stroke-width="1.5"/>`;
+    if(show){
+      const lw=n.label.length*5.2+8;
+      o+=`<rect x="${n.x-2}" y="${ny-22}" width="${lw}" height="14" rx="3" fill="${n.col}" opacity="0.92"/>`;
+      o+=`<text x="${n.x+2}" y="${ny-12}" font-size="7.5" font-weight="700" fill="white" font-family="sans-serif">${n.label}</text>`;
+    }
+  });
+  svg.innerHTML=o;
+}
+
+// ── Widget 4: Population Growth Curve Simulator ───────────────────
+const _popState={};
+const _popScenarios=[
+  {q:'A new predator is introduced. What happens to the population?',
+   opts:['Grows rapidly','Shrinks — deaths exceed births','Stabilizes immediately'],ans:1,
+   exp:'A new predator raises the death rate, so r decreases and population falls below K.'},
+  {q:'Resources suddenly double. What happens in a small population?',
+   opts:['Exponential growth begins','Growth rate stays the same','Population stops at K'],ans:0,
+   exp:'With abundant resources, small populations show rapid exponential (J-curve) growth.'},
+  {q:'A drought cuts birth rate nearly to zero. What happens near K?',
+   opts:['Population keeps growing','Population slowly declines below K','Population stays exactly at K'],ans:1,
+   exp:'If births fall below deaths, the population drops below carrying capacity.'},
+];
+function buildPopGrowth(id){
+  return `<div class="widget" id="${id}" data-wtype="pop">
+  <div class="widget-title">📈 Population Growth Simulator</div>
+  <div style="display:flex;gap:6px;justify-content:center;margin-bottom:7px">
+    <button class="btn-widget-sm" id="${id}-ebtn" onclick="popMode('${id}','exp')">Exponential (J-curve)</button>
+    <button class="btn-widget-sm" id="${id}-lbtn" onclick="popMode('${id}','log')">Logistic (S-curve)</button>
+  </div>
+  <svg id="${id}-g" viewBox="0 0 310 165" style="width:100%;display:block"></svg>
+  <div class="pop-grid">
+    <label>N₀ (start) <input type="range" id="${id}-n0" min="5" max="50" value="10" oninput="popDraw('${id}')"> <b id="${id}-n0v">10</b></label>
+    <label>r = birth−death <input type="range" id="${id}-r" min="1" max="10" value="4" oninput="popDraw('${id}')"> <b id="${id}-rv">0.4</b></label>
+    <label id="${id}-krow" style="display:none">K (carrying cap.) <input type="range" id="${id}-k" min="50" max="250" value="100" oninput="popDraw('${id}')"> <b id="${id}-kv">100</b></label>
+  </div>
+  <div id="${id}-scn" style="display:none;font-size:.8rem;padding:7px 10px;border-radius:8px;background:var(--surface2);margin-top:7px;line-height:1.5"></div>
+  <div style="text-align:center;margin-top:6px"><button class="btn-widget-sm" onclick="popScenario('${id}')">What happens next? →</button></div>
+</div>`;}
+function initPopGrowth(id){
+  if(!document.getElementById(id))return;
+  _popState[id]={mode:'exp',scIdx:0};
+  popMode(id,'exp');
+}
+function popMode(id,mode){
+  const s=_popState[id];if(!s)return;
+  s.mode=mode;
+  const eb=document.getElementById(`${id}-ebtn`),lb=document.getElementById(`${id}-lbtn`);
+  eb.style.background=mode==='exp'?'#0ea5e9':'';eb.style.color=mode==='exp'?'white':'';
+  lb.style.background=mode==='log'?'#10b981':'';lb.style.color=mode==='log'?'white':'';
+  document.getElementById(`${id}-krow`).style.display=mode==='log'?'':'none';
+  popDraw(id);
+}
+function popDraw(id){
+  const s=_popState[id];if(!s)return;
+  const N0=+(document.getElementById(`${id}-n0`)?.value||10);
+  const r=+(document.getElementById(`${id}-r`)?.value||4)/10;
+  const K=+(document.getElementById(`${id}-k`)?.value||100);
+  document.getElementById(`${id}-n0v`).textContent=N0;
+  document.getElementById(`${id}-rv`).textContent=r.toFixed(1);
+  const kv=document.getElementById(`${id}-kv`);if(kv)kv.textContent=K;
+  const svg=document.getElementById(`${id}-g`);if(!svg)return;
+  const ox=40,oy=148,gW=255,gH=118,T=8,steps=60;
+  const pts=[],maxT=T;
+  let maxN=N0;
+  for(let i=0;i<=steps;i++){
+    const t=i/steps*maxT;
+    const N=s.mode==='exp'?N0*Math.exp(r*t):K/(1+((K-N0)/N0)*Math.exp(-r*t));
+    pts.push({t,N});if(N>maxN)maxN=N;
+  }
+  if(s.mode==='log')maxN=Math.max(maxN,K)*1.15;else maxN*=1.1;
+  const sX=gW/maxT,sY=gH/maxN;
+  let o=`<rect x="${ox}" y="${oy-gH}" width="${gW}" height="${gH}" rx="4" fill="#f8fafc" stroke="#e2e8f0"/>`;
+  o+=`<line x1="${ox}" y1="${oy}" x2="${ox+gW}" y2="${oy}" stroke="#94a3b8" stroke-width="1.5"/>`;
+  o+=`<line x1="${ox}" y1="${oy-gH}" x2="${ox}" y2="${oy}" stroke="#94a3b8" stroke-width="1.5"/>`;
+  o+=`<text x="${ox+gW/2}" y="${oy+13}" text-anchor="middle" font-size="8" fill="#64748b" font-family="sans-serif">Time →</text>`;
+  o+=`<text x="14" y="${oy-gH/2+4}" text-anchor="middle" font-size="8" fill="#64748b" font-family="sans-serif" transform="rotate(-90,14,${oy-gH/2})">Population (N)</text>`;
+  for(let i=0;i<=4;i++){
+    const n=Math.round(maxN*i/4);const ty=oy-n*sY;
+    o+=`<line x1="${ox-3}" y1="${ty}" x2="${ox}" y2="${ty}" stroke="#94a3b8" stroke-width="1"/>`;
+    o+=`<text x="${ox-5}" y="${ty+3}" text-anchor="end" font-size="7" fill="#94a3b8" font-family="sans-serif">${n}</text>`;
+  }
+  if(s.mode==='log'){
+    const ky=oy-K*sY;
+    o+=`<line x1="${ox}" y1="${ky}" x2="${ox+gW}" y2="${ky}" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="5,3"/>`;
+    o+=`<text x="${ox+gW+3}" y="${ky+3}" font-size="7.5" font-weight="700" fill="#ef4444" font-family="sans-serif">K</text>`;
+    const inflN=K/2,inflT=r>0?Math.log((K-N0)/N0)/r:-1;
+    if(inflT>0&&inflT<maxT){
+      const ix=ox+inflT*sX,iy=oy-inflN*sY;
+      o+=`<circle cx="${ix.toFixed(0)}" cy="${iy.toFixed(0)}" r="4" fill="#f59e0b" stroke="white" stroke-width="1.5"/>`;
+      o+=`<text x="${(ix+6).toFixed(0)}" y="${(iy-4).toFixed(0)}" font-size="7" fill="#92400e" font-weight="700" font-family="sans-serif">inflection</text>`;
+    }
+  }
+  const col=s.mode==='exp'?'#0ea5e9':'#10b981';
+  o+=`<polyline points="${pts.map(p=>`${(ox+p.t*sX).toFixed(1)},${(oy-p.N*sY).toFixed(1)}`).join(' ')}" fill="none" stroke="${col}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+  svg.innerHTML=o;
+}
+function popScenario(id){
+  const s=_popState[id];if(!s)return;
+  const sc=_popScenarios[s.scIdx%_popScenarios.length];s.scIdx++;
+  const div=document.getElementById(`${id}-scn`);div.style.display='block';
+  div.innerHTML=`<strong>${sc.q}</strong><div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:5px">${sc.opts.map((o,i)=>`<button class="btn-widget-sm" onclick="popAns('${id}',${i},${sc.ans},'${sc.exp.replace(/'/g,"\\'").replace(/"/g,'&quot;')}',this)">${o}</button>`).join('')}</div>`;
+}
+function popAns(id,chosen,ans,exp,btn){
+  btn.parentElement.querySelectorAll('.btn-widget-sm').forEach((b,i)=>{
+    b.style.background=i===ans?'#10b981':i===chosen?'#ef4444':'';
+    b.style.color=(i===ans||i===chosen)?'white':'';b.disabled=true;
+  });
+  const d=document.createElement('div');
+  d.style.cssText='margin-top:5px;font-size:.77rem;font-style:italic;color:#374151';
+  d.textContent=exp;btn.parentElement.parentElement.appendChild(d);
+}
+
+// ── Widget 5: Genetic Drift Bottle Simulator ─────────────────────
+const _driftState={};
+const _driftCols=['#ef4444','#f59e0b','#10b981','#06b6d4','#8b5cf6','#ec4899'];
+function buildGeneticDrift(id){
+  return `<div class="widget" id="${id}" data-wtype="drift">
+  <div class="widget-title">🫙 Genetic Drift & Bottleneck</div>
+  <div class="drift-jars">
+    ${[['jar1','Original (N=100)'],['jar2','Bottleneck'],['jar3','Founders']].map(([j,l])=>`
+    <div class="drift-jar-wrap"><div class="drift-jar-lbl" id="${id}-${j}l">${l}</div>
+    <svg id="${id}-${j}" viewBox="0 0 84 120" style="width:84px;display:block;margin:0 auto"></svg></div>`).join('')}
+  </div>
+  <div id="${id}-info" style="font-size:.77rem;text-align:center;margin:7px 0;color:var(--text);line-height:1.5;min-height:32px"></div>
+  <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap">
+    <button class="btn-widget-sm" onclick="driftBottleneck('${id}')">🌋 Disaster Strikes</button>
+    <button class="btn-widget-sm" onclick="driftFound('${id}')">🏝 Found New Population</button>
+    <button class="btn-widget-sm" onclick="driftReset('${id}')">Reset</button>
+  </div>
+</div>`;}
+function initGeneticDrift(id){
+  if(!document.getElementById(id))return;
+  const orig=[];
+  [20,18,17,16,15,14].forEach((n,c)=>{for(let i=0;i<n;i++)orig.push(c);});
+  _driftState[id]={orig,surv:null,found:null,stage:0};
+  _driftDrawAll(id);
+}
+function driftBottleneck(id){
+  const s=_driftState[id];if(!s)return;
+  s.surv=[...(s.orig)].sort(()=>Math.random()-0.5).slice(0,10);
+  s.stage=1;_driftDrawAll(id);
+  document.getElementById(`${id}-info`).innerHTML='🌋 <strong>Bottleneck Effect:</strong> Disaster reduced 100 to 10 random survivors. Allele frequencies shifted dramatically — some alleles vanished entirely by chance, not by selection.';
+  document.getElementById(`${id}-jar2l`).innerHTML='Bottleneck <b style="color:#ef4444">(N=10)</b>';
+}
+function driftFound(id){
+  const s=_driftState[id];if(!s||!s.surv)return;
+  s.found=[...s.surv].sort(()=>Math.random()-0.5).slice(0,5);
+  s.stage=2;_driftDrawAll(id);
+  document.getElementById(`${id}-info`).innerHTML='🏝 <strong>Founder Effect:</strong> 5 individuals colonized a new area. Their gene pool is a tiny, random sample of the survivors — even less diversity than the bottleneck population.';
+  document.getElementById(`${id}-jar3l`).innerHTML='Founders <b style="color:#8b5cf6">(N=5)</b>';
+}
+function driftReset(id){
+  initGeneticDrift(id);
+  document.getElementById(`${id}-info`).textContent='';
+  document.getElementById(`${id}-jar2l`).textContent='Bottleneck';
+  document.getElementById(`${id}-jar3l`).textContent='Founders';
+}
+function _driftPie(cx,cy,r,freqs,total){
+  let ang=-Math.PI/2,out='';
+  freqs.forEach((f,i)=>{
+    if(!f)return;
+    const sw=f/total*Math.PI*2;
+    const x1=cx+r*Math.cos(ang),y1=cy+r*Math.sin(ang);
+    const x2=cx+r*Math.cos(ang+sw),y2=cy+r*Math.sin(ang+sw);
+    out+=`<path d="M${cx},${cy} L${x1.toFixed(1)},${y1.toFixed(1)} A${r},${r} 0 ${sw>Math.PI?1:0} 1 ${x2.toFixed(1)},${y2.toFixed(1)} Z" fill="${_driftCols[i]}"/>`;
+    ang+=sw;
+  });
+  return out;
+}
+function _driftDrawJar(id,num,pop){
+  const svg=document.getElementById(`${id}-jar${num}`);if(!svg)return;
+  let s=`<rect x="7" y="14" width="70" height="78" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="2"/>`;
+  s+=`<rect x="17" y="7" width="50" height="12" rx="4" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>`;
+  if(pop&&pop.length>0){
+    pop.slice(0,56).forEach((a,i)=>{
+      const col=i%7,row=Math.floor(i/7);
+      s+=`<circle cx="${13+col*9}" cy="${20+row*10}" r="3.5" fill="${_driftCols[a]}" opacity="0.9"/>`;
+    });
+    const freqs=new Array(6).fill(0);pop.forEach(a=>freqs[a]++);
+    s+=_driftPie(42,107,9,freqs,pop.length);
+    s+=`<text x="42" y="120" text-anchor="middle" font-size="6.5" fill="#64748b" font-family="sans-serif">allele mix</text>`;
+  }else{
+    s+=`<text x="42" y="56" text-anchor="middle" font-size="8" fill="#94a3b8" font-family="sans-serif">—</text>`;
+  }
+  svg.innerHTML=s;
+}
+function _driftDrawAll(id){
+  const s=_driftState[id];if(!s)return;
+  _driftDrawJar(id,1,s.orig);
+  _driftDrawJar(id,2,s.surv);
+  _driftDrawJar(id,3,s.found);
+}
+
+// ── Widget 6: Species Interaction Identifier ─────────────────────
+const _siScenes=[
+  {name:'Bee & Flower',emoji:'🐝🌸',type:'mutualism',
+   desc:'Bee collects nectar; flower gets pollinated.',
+   exp:'+/+ Both benefit. The bee gains food (nectar). The flower gains pollination — critical for reproduction.'},
+  {name:'Barnacle & Whale',emoji:'🐋',type:'commensalism',
+   desc:'Barnacle attaches to whale for transport; whale is unaffected.',
+   exp:'+/0 One benefits, other unaffected. The barnacle gains transportation and access to food-rich water. The whale neither gains nor loses.'},
+  {name:'Tapeworm & Host',emoji:'🪱',type:'parasitism',
+   desc:'Tapeworm absorbs nutrients inside the host intestine.',
+   exp:'+/− Parasite benefits, host loses. The tapeworm absorbs digested food. The host loses nutrition and may suffer disease or weight loss.'},
+  {name:'Clownfish & Anemone',emoji:'🐠',type:'mutualism',
+   desc:'Clownfish hides among stinging tentacles; anemone gets cleaned.',
+   exp:'+/+ Both benefit. The clownfish gets shelter and protection from predators. The anemone benefits from waste nutrients and parasite removal.'},
+  {name:'Cattle Egret & Buffalo',emoji:'🐦🦬',type:'commensalism',
+   desc:'Egret eats insects disturbed by the walking buffalo.',
+   exp:'+/0 The egret gains a reliable food source by following the buffalo. The buffalo is completely unaffected.'},
+  {name:'Tick & Deer',emoji:'🦌',type:'parasitism',
+   desc:'Tick feeds on deer\'s blood over days or weeks.',
+   exp:'+/− The tick gains blood meals and may reproduce. The deer loses blood, energy, and risks disease transmission from tick bites.'},
+];
+const _siState={};
+function buildSpeciesInteractions(id){
+  return `<div class="widget" id="${id}" data-wtype="si">
+  <div class="widget-title">🌿 Species Interaction Identifier</div>
+  <div class="si-scene" id="${id}-scene"></div>
+  <div class="si-result" id="${id}-result"></div>
+  <div style="text-align:center;margin-top:7px"><button class="btn-widget-sm" onclick="siNext('${id}')">New Scenario →</button></div>
+</div>`;}
+function initSpeciesInteractions(id){
+  if(!document.getElementById(id))return;
+  _siState[id]={idx:0,answered:false};
+  _siRender(id);
+}
+function siNext(id){
+  const s=_siState[id];if(!s)return;
+  s.idx=(s.idx+1)%_siScenes.length;s.answered=false;
+  document.getElementById(`${id}-result`).className='si-result';
+  _siRender(id);
+}
+function siAnswer(id,chosen){
+  const s=_siState[id];if(!s||s.answered)return;
+  s.answered=true;
+  const sc=_siScenes[s.idx];const ok=chosen===sc.type;
+  const res=document.getElementById(`${id}-result`);
+  const badge=sc.type==='mutualism'?'+/+':sc.type==='commensalism'?'+/0':'+/−';
+  res.textContent=`${ok?'✓':'✗'} ${sc.type.charAt(0).toUpperCase()+sc.type.slice(1)} (${badge}). ${sc.exp}`;
+  res.className=`si-result show ${ok?'ok':'err'}`;
+}
+function _siSVG(type){
+  switch(type){
+    case'bee':return`<rect width="200" height="70" rx="8" fill="#fef9c3"/>
+    <ellipse cx="140" cy="45" r="22" fill="#4ade80" opacity=".85"/>
+    <ellipse cx="140" cy="33" rx="9" ry="7" fill="#fbbf24"/>
+    <ellipse cx="129" cy="33" rx="7" ry="3.5" fill="#fbbf24" opacity=".8" transform="rotate(-25,129,33)"/>
+    <ellipse cx="151" cy="33" rx="7" ry="3.5" fill="#fbbf24" opacity=".8" transform="rotate(25,151,33)"/>
+    <g><ellipse cx="46" cy="40" rx="11" ry="7" fill="#fbbf24" stroke="#92400e" stroke-width="1"/>
+    <line x1="35" y1="38" x2="30" y2="30" stroke="#64748b" stroke-width="1.5"/>
+    <line x1="46" y1="33" x2="46" y2="24" stroke="#64748b" stroke-width="1.5"/>
+    <line x1="57" y1="38" x2="62" y2="30" stroke="#64748b" stroke-width="1.5"/>
+    <ellipse cx="46" cy="40" rx="3" ry="7" fill="#334155" opacity=".7"/>
+    <animateTransform attributeName="transform" type="translate" values="0,0;88,0;88,0;0,0" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.45;0.55;1" keySplines=".4 0 .2 1;0 0 1 1;.4 0 .2 1"/></g>`;
+    case'whale':return`<rect width="200" height="70" rx="8" fill="#bfdbfe"/>
+    <ellipse cx="95" cy="45" rx="65" ry="20" fill="#475569"/>
+    <ellipse cx="150" cy="50" rx="22" ry="12" fill="#374151" transform="rotate(-15,150,50)"/>
+    <circle cx="42" cy="38" r="4" fill="white"/>
+    <circle cx="70" cy="30" r="3.5" fill="#94a3b8" stroke="white" stroke-width="1"/>
+    <circle cx="85" cy="30" r="3.5" fill="#94a3b8" stroke="white" stroke-width="1"/>
+    <circle cx="100" cy="32" r="3" fill="#94a3b8" stroke="white" stroke-width="1"/>
+    <text x="70" y="18" text-anchor="middle" font-size="9" fill="#1e40af" font-family="sans-serif">barnacles ↓</text>`;
+    case'worm':return`<rect width="200" height="70" rx="8" fill="#fce7f3"/>
+    <ellipse cx="100" cy="40" rx="70" ry="25" fill="#fda4af" opacity=".7"/>
+    <ellipse cx="100" cy="38" rx="40" ry="14" fill="#fb7185" opacity=".6"/>
+    <text x="100" y="22" text-anchor="middle" font-size="10" fill="#9f1239" font-weight="700" font-family="sans-serif">host</text>
+    <ellipse cx="100" cy="40" rx="18" ry="6" fill="#a16207" opacity=".9">
+      <animateTransform attributeName="transform" type="rotate" values="0,100,40;360,100,40" dur="4s" repeatCount="indefinite"/></ellipse>`;
+    case'fish':return`<rect width="200" height="70" rx="8" fill="#cffafe"/>
+    <ellipse cx="100" cy="42" rx="55" ry="22" fill="#06b6d4" opacity=".5"/>
+    <g opacity=".9"><ellipse cx="60" cy="40" rx="14" ry="9" fill="#f97316"/>
+    <polygon points="46,34 38,28 38,46" fill="#ea580c"/>
+    <circle cx="68" cy="38" r="3" fill="white"/><circle cx="69" cy="37" r="1.5" fill="#1e293b"/>
+    <animateTransform attributeName="transform" type="translate" values="0,0;70,3;0,0" dur="3.5s" repeatCount="indefinite" calcMode="spline" keySplines=".4 0 .2 1;.4 0 .2 1"/></g>`;
+    default:return`<rect width="200" height="70" rx="8" fill="#f1f5f9"/>
+    <text x="100" y="40" text-anchor="middle" font-size="28" font-family="sans-serif">${_siScenes.find(sc=>sc.type===type)?.emoji||'🐾'}</text>`;
+  }
+}
+function _siRender(id){
+  const s=_siState[id];if(!s)return;
+  const sc=_siScenes[s.idx];
+  const animType=s.idx===0?'bee':s.idx===1?'whale':s.idx===2?'worm':s.idx===3?'fish':'worm';
+  document.getElementById(`${id}-scene`).innerHTML=`<div class="si-scene">
+  <svg viewBox="0 0 200 70" style="width:100%;max-width:240px;display:block;margin:0 auto 6px;border-radius:10px">${_siSVG(animType)}</svg>
+  <div class="si-name">${sc.emoji} ${sc.name}</div>
+  <div class="si-desc">${sc.desc}</div>
+  <div style="display:flex;gap:7px;justify-content:center;flex-wrap:wrap">
+    ${['mutualism','commensalism','parasitism'].map(t=>`<button class="btn-widget-sm" onclick="siAnswer('${id}','${t}')">${t.charAt(0).toUpperCase()+t.slice(1)}</button>`).join('')}
+  </div></div>`;
+}
+
+// ── Master Evo widget initializer ────────────────────────────────
+function initEvoWidgets(){
+  ['wns-ov','wns-fc0'].forEach(i=>{if(document.getElementById(i))initNatSelSim(i);});
+  if(document.getElementById('wsel-fc14'))initSelectionBells('wsel-fc14');
+  if(document.getElementById('wclad-fc15'))initCladogram('wclad-fc15');
+  ['wpop-ov','wpop-fc20'].forEach(i=>{if(document.getElementById(i))initPopGrowth(i);});
+  if(document.getElementById('wdrift-fc12'))initGeneticDrift('wdrift-fc12');
+  if(document.getElementById('wint-fc23'))initSpeciesInteractions('wint-fc23');
+}
+
 // ═══ DNA WIDGETS ═══════════════════════════════════════════════
 
 // ── Widget 1: DNA Base Pairing Game ─────────────────────────────
@@ -2883,6 +3488,9 @@ function render() {
   if ((v === 'learn' || v === 'overview') && state.topicId === 'dna') {
     initDnaWidgets();
   }
+  if ((v === 'learn' || v === 'overview') && state.topicId === 'evo') {
+    initEvoWidgets();
+  }
 }
 
 function renderOverview() {
@@ -2943,6 +3551,13 @@ function renderOverview() {
     <p style="font-size:.82rem;color:var(--muted);margin-bottom:4px">Interact with these before moving to flashcards — they cover the most-tested concepts.</p>
     ${buildDNABasePairing('wbp-ov')}
     ${buildTranscriptionWalkthrough('wtx-ov')}
+  </div>` : ''}
+  ${topic.id === 'evo' ? `
+  <div class="ov-section" ${ts}>
+    <div class="ov-sec-title">🎮 Practice Activities</div>
+    <p style="font-size:.82rem;color:var(--muted);margin-bottom:4px">Interact with these before moving to flashcards — they cover the most-tested concepts.</p>
+    ${buildNatSelSim('wns-ov')}
+    ${buildPopGrowth('wpop-ov')}
   </div>` : ''}
   <button class="btn-to-fc" ${ts} onclick="startLearn('${topic.id}')">
     I'm ready — show me the flashcards →
@@ -3028,6 +3643,12 @@ function renderLearn() {
         ${topic.id==='dna'&&idx===6 ? buildTranscriptionWalkthrough('wtx-fc6') : ''}
         ${topic.id==='dna'&&idx===11 ? buildMutationDemo('wmut-fc11') : ''}
         ${topic.id==='dna'&&idx===13 ? buildGelSim('wgel-fc13') : ''}
+        ${topic.id==='evo'&&idx===0 ? buildNatSelSim('wns-fc0') : ''}
+        ${topic.id==='evo'&&idx===14 ? buildSelectionBells('wsel-fc14') : ''}
+        ${topic.id==='evo'&&idx===15 ? buildCladogram('wclad-fc15') : ''}
+        ${topic.id==='evo'&&idx===20 ? buildPopGrowth('wpop-fc20') : ''}
+        ${topic.id==='evo'&&idx===12 ? buildGeneticDrift('wdrift-fc12') : ''}
+        ${topic.id==='evo'&&idx===23 ? buildSpeciesInteractions('wint-fc23') : ''}
       </div>
     </div>
   </div>
